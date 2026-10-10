@@ -77,6 +77,8 @@ Effortlessly generate all essential directories and files for your Nuxt project 
 
 To initiate any creation action, simply prepend it with the prefix **`Nuxtr: Create...`** and **`Nuxtr: Nuxt project structure...`** command for creating the entire project structure.
 
+Right-click the Nuxt application folder (`app/` in a modern Nuxt 4 layout) or a project root and select **Nuxtr: Nuxt project structure...**. Right-click the resolved server folder to select **Create new Nitro API** or **Create new Nitro Utility**; these create files under `server/api` and `server/utils`. Custom `srcDir`/`serverDir` settings and nested projects are respected.
+
 Customize Vue file templates with these settings:
 
 ```JSON

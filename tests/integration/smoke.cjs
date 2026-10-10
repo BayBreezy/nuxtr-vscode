@@ -15,6 +15,12 @@ exports.run = async function run () {
         assert(commands.includes('nuxtr.createComponent'));
         assert(commands.includes('nuxtr.createNitroTask'));
         assert(commands.includes('nuxtr.enableNitroTasks'));
+        const explorer = extension.packageJSON.contributes.menus['explorer/context'];
+        assert(explorer.find(menu => menu.command === 'nuxtr.projectStructure').when.includes('resourcePath in nuxtr.applicationDirectories'));
+        for (const command of ['nuxtr.createNitroAPI', 'nuxtr.createNitroUtil']) {
+            assert(commands.includes(command), 'Server-root actions must be registered');
+            assert(explorer.find(menu => menu.command === command).when.includes('resourcePath in nuxtr.serverDirectories'));
+        }
         const build = 'out/sidebar';
         assert(existsSync(join(extension.extensionPath, build, 'assets/index.js')));
         assert(existsSync(join(extension.extensionPath, build, 'assets/index.css')));

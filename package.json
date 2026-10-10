@@ -397,12 +397,22 @@
         },
         {
           "command": "nuxtr.projectStructure",
-          "when": " nuxtr.isNuxtProject && explorerResourceIsFolder && explorerResourceIsRoot",
+          "when": "nuxtr.isNuxtProject && explorerResourceIsFolder && (explorerResourceIsRoot || resourcePath in nuxtr.projectRoots || resourcePath in nuxtr.applicationDirectories)",
           "group": "navigation"
         },
         {
           "command": "nuxtr.directCreateNitroTask",
           "when": "nuxtr.isNuxtProject && explorerResourceIsFolder",
+          "group": "nuxtr/nitro"
+        },
+        {
+          "command": "nuxtr.createNitroAPI",
+          "when": "nuxtr.isNuxtProject && explorerResourceIsFolder && resourcePath in nuxtr.serverDirectories",
+          "group": "nuxtr/nitro"
+        },
+        {
+          "command": "nuxtr.createNitroUtil",
+          "when": "nuxtr.isNuxtProject && explorerResourceIsFolder && resourcePath in nuxtr.serverDirectories",
           "group": "nuxtr/nitro"
         }
       ],
