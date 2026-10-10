@@ -42,7 +42,7 @@ async function detectPiniaModule () {
 
 }
 
-/** Prompt for a name and create the selected store scaffold. */
+/** Prompt for a store name and create its configured template under the resolved Nuxt directory. */
 const createStore = () => {
     return window
         .showInputBox({

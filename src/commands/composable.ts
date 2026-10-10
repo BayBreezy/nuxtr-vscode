@@ -4,7 +4,7 @@ import { projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode'
 import { createDir, createFile, createSubFolders, generateScaffoldTemplate, nuxtrConfiguration, showSubFolderQuickPick } from '../utils'
 
-/** Prompt for a name and create the selected composable scaffold. */
+/** Prompt for a composable name and create its configured template under the resolved Nuxt directory. */
 const createComposable = () => {
     return window
         .showInputBox({

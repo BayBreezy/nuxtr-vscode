@@ -3,7 +3,7 @@ import { projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode';
 import { createDir, createFile, createSubFolders, generateVueFileTemplate, normalizeFileExtension, projectSrcDirectory, showSubFolderQuickPick, } from '../utils';
 
-/** Prompt for a name and create the selected component scaffold. */
+/** Prompt for a component name and create its configured template under the resolved Nuxt directory. */
 const createComponent = () => {
     return window
         .showInputBox({

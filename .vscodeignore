@@ -21,3 +21,10 @@ tests/**
 .agents/**
 .claude/**
 skills-lock.json
+
+**/*.mts
+pnpm-lock.yaml
+pnpm-workspace.yaml
+.node-version
+.npmrc
+knip.ts

@@ -5,7 +5,7 @@ export type ScaffoldLanguage = 'ts' | 'js';
 
 /** Avoid doubling an existing use prefix while preserving names such as useful. */
 export function composableName (name: string): string {
-    const base = normalizedExtension(name, '.ts');
+    const base = normalizedExtension(name, '.ts').split(/[\\/]/).pop()!;
     return normalizedIdentifier(base.replace(/^use(?=[A-Z_-])/, ''));
 }
 

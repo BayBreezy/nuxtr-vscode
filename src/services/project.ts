@@ -2,7 +2,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { resolve } from 'node:path';
 import { EventEmitter, ExtensionContext, Uri, commands, window, workspace } from 'vscode';
-import { ProjectContext, configAt, discoverProjects, managerRoot, projectForResource } from '../core/project';
+import { ProjectContext, configAt, containsPath, discoverProjects, managerRoot, projectForResource } from '../core/project';
 
 const operation = new AsyncLocalStorage<ProjectContext>();
 let projects: ProjectContext[] = [];
@@ -39,11 +39,13 @@ export async function selectProject (resource?: Uri | string, forcePicker = fals
     const uri = typeof resource === 'string' ? Uri.file(resource) : resource;
     const document = uri || window.activeTextEditor?.document.uri;
     let result = configuredProject(document);
+    const candidates = uri ? projects.filter(project => containsPath(project.root, uri.fsPath) || containsPath(uri.fsPath, project.root)) : projects;
+    if (uri && !result && candidates.length === 0) { throw new Error('This resource is outside the discovered Nuxt projects. Select a project or use a folder inside it.'); }
     if (!result && !forcePicker) {
-        result = projectForResource(projects, document?.fsPath) || selected || (projects.length === 1 ? projects[0] : undefined);
+        result = projectForResource(candidates, document?.fsPath) || (uri ? undefined : selected) || (candidates.length === 1 ? candidates[0] : undefined);
     }
-    if (!result && projects.length > 0) {
-        const item = await window.showQuickPick(projects.map(project => ({ label: workspace.asRelativePath(project.root), description: project.root, project })), { placeHolder: 'Select the Nuxt project for this action' });
+    if (!result && candidates.length > 0) {
+        const item = await window.showQuickPick(candidates.map(project => ({ label: workspace.asRelativePath(project.root), description: project.root, project })), { placeHolder: 'Select the Nuxt project for this action' });
         result = item?.project;
     }
     if (result) {

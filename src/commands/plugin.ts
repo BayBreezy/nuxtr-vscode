@@ -1,12 +1,11 @@
 /** Prompt for and scaffold plugin files in the selected project’s resolved directories. */
-import { containsPath } from '../core/project';
 import { scaffoldExtension } from '../utils/files';
-import { projectDirectory } from '../utils/nuxt';
+import { directServerScaffold, projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode'
 import { nitroPluginTemplate, nuxtPluginTemplate } from '../templates'
 import { createDir, createFile, createSubFolders, hasServerDir, normalizeFileExtension, projectSrcDirectory, showSubFolderQuickPick } from '../utils'
 
-/** Prompt for a name and create the selected plugin scaffold. */
+/** Prompt for a plugin name and create its configured template under the resolved Nuxt directory. */
 const createPlugin = () => {
     return window
         .showInputBox({
@@ -35,7 +34,8 @@ const createPlugin = () => {
 
 /** Create a file in the Explorer folder supplied by the command. */
 const directCreatePlugin = async (path: string) => {
-    const serverDir = await hasServerDir()
+    const server = await directServerScaffold(path);
+    if (server === undefined) { return; }
 
     return window
         .showInputBox({
@@ -50,7 +50,7 @@ const directCreatePlugin = async (path: string) => {
 
             return createFile({
                 fileName: `${name}${scaffoldExtension()}`,
-                content: containsPath(projectDirectory('server'), filePath) ? nitroPluginTemplate : nuxtPluginTemplate,
+                content: server ? nitroPluginTemplate : nuxtPluginTemplate,
                 fullPath: filePath,
             })
         })

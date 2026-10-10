@@ -2,6 +2,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
+import { terminalCommand } from '../core/managers';
 import { projectRootDirectory } from '../utils/global';
 
 /** Find a project-local CLI binary without importing or executing the CLI's private module API. */
@@ -21,14 +22,7 @@ export function resolveNuxtCLI (root: string): string {
     throw new Error('The project-local Nuxt CLI is missing. Install this project’s dependencies first.');
 }
 
-/** Quote terminal arguments for the default POSIX shell or Windows PowerShell. */
-function quoteArgument (value: string): string {
-    return process.platform === 'win32'
-        ? `'${value.replaceAll('\'', '\'\'')}'`
-        : `'${value.replaceAll('\'', '\'"\'"\'')}'`;
-}
-
 /** Build a terminal command from the local public CLI binary and individually quoted arguments. */
 export function nuxtCLICommand (args: string[]): string {
-    return 'node ' + [resolveNuxtCLI(projectRootDirectory()), ...args].map(value => quoteArgument(value)).join(' ');
+    return terminalCommand({ executable: 'node', args: [resolveNuxtCLI(projectRootDirectory()), ...args], cwd: projectRootDirectory() });
 }

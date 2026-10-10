@@ -21,3 +21,35 @@ We're always happy to have contributors to the project. Nuxtr is actively develo
 ### Commit conventions
 
 We use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) to automate the release process. Please follow the commit conventions to make sure your PRs are included in the next release.
+
+## Development and validation
+
+Use Node **24.20.0** (`.node-version`) and pnpm **12.10.1** (`packageManager`). Workspace settings and approved build scripts live in `pnpm-workspace.yaml`.
+
+```sh
+pnpm install --frozen-lockfile
+pnpm validate
+pnpm test:fixtures
+pnpm dev
+```
+
+`pnpm validate` fails immediately on a failed check. It runs frozen installation, extension/sidebar typechecks, lint, unit regressions, production build/VSIX asset checks, an isolated production-sidebar browser test, VS Code host scenarios and activation from an extracted VSIX. Install the browser once with `pnpm exec playwright install chromium` if Chrome is unavailable. `pnpm test:fixtures` creates isolated Nuxt 3 and 4 projects and verifies generated Tailwind, Pinia, composable, API, middleware and task code through prepare, typecheck and production builds; initial dependency installation needs network access.
+
+The host suite covers empty/non-Nuxt windows, nested/multiple projects, Nuxt 2, Nuxt 3, compatibility v4, Nuxt 4 modern/legacy layouts and custom directories. Routine tests use offline package-manager and browser-host fixtures. `VSCODE_TEST_VERSION` chooses a downloaded VS Code release; `VSCODE_EXECUTABLE_PATH` overrides its executable. The browser blocks external requests. `PLAYWRIGHT_CHROMIUM_EXECUTABLE` selects an installed Chromium executable.
+
+`pnpm build` cleans `out/` once and builds the CommonJS extension and Vue sidebar. `pnpm dev` watches both without deleting sibling output. Generated bundles are ignored; packaged sidebar assets live under `out/sidebar`. Launch **Run Extension** in VS Code after building. Inspect a VSIX with local `pnpm package --out <path>`; publishing scripts are separate release actions.
+
+## Architecture and documentation
+
+- `src/core/`: independently tested project discovery, directory resolution, process/manager commands, catalog edits, templates, task and catalogue logic.
+- `src/services/`: VS Code project scope and host-side process/network adapters.
+- `src/commands/`: user actions and prompts; retain existing public command IDs.
+- `src/sideBar/`: typed host requests and the Vue UI. Validate messages before commands or edits, retain restrictive CSP, and dispose listeners with their owner.
+
+Start modified code files with a purpose comment and add JSDoc above named functions/methods explaining their behavior. Explain non-obvious constraints where they arise; avoid comments that merely repeat the code. JSON manifests remain valid JSON. `pnpm docs:check` audits comments on source files changed since the modernization baseline.
+
+Keep substantial changes in separate branches from tested `main`. Use Conventional Commits, run the shared gate and applicable Nuxt fixtures, inspect the VSIX/diff, then merge locally with `git merge --no-ff` and rerun affected smoke tests. A failing check blocks merging. The local ignored `PLAN.md` and `PROGRESS.md` hold branch/evidence records and are excluded from VSIX packages. Pushes, upstream submissions, tagging and Marketplace publication require their own release workflow.
+
+TypeScript is retained at **6.0.3** while vue-tsc's public compiler entrypoint and typescript-eslint peers do not support TypeScript 7. VS Code API declarations remain **1.140.0**, the latest published matching-generation types available during modernization, while the runtime minimum is 1.141.0. Revisit both with concrete peer/type/host evidence before upgrading.
+
+Linux/Windows CI and macOS smoke jobs are configured for minimum/current stable VS Code. Local results do not replace CI results. Record WSL/remote verification only after it is actually performed; those environments remain pending in local modernization records.

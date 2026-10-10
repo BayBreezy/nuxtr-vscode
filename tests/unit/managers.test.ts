@@ -23,3 +23,19 @@ it('distinguishes scripts from local CLI and dependency installs across all mana
         expect(managerCommand(manager, 'add', '/project', ['@nuxt/test'], true).args).toContain('-D');
     }
 });
+
+it('preserves quotes and shell-looking text when rendering a POSIX terminal command', async () => {
+    const { terminalCommand } = await import('../../src/core/managers');
+    const { executeCommand } = await import('../../src/core/process');
+    if (process.platform === 'win32') { return; }
+    const value = 'one\'s $(printf EXPANDED)';
+    const command = terminalCommand({ executable: process.execPath, args: ['-e', 'process.stdout.write(process.argv[1])', value], cwd: fixture() });
+    const result = await executeCommand({ executable: '/bin/sh', args: ['-c', command], cwd: fixture() });
+    expect(result.stdout).toBe(value);
+    expect(result.success).toBe(true);
+});
+
+it('renders Windows terminal arguments for the explicitly selected PowerShell profile', async () => {
+    const { terminalCommand } = await import('../../src/core/managers');
+    expect(terminalCommand({ executable: 'pnpm', args: ['add', 'one\'s literal $value'], cwd: '.' }, 'win32')).toBe('& \'pnpm\' \'add\' \'one\'\'s literal $value\'');
+});

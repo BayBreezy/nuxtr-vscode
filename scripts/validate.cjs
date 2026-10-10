@@ -1,5 +1,6 @@
 /** Serial merge gate: frozen dependencies, types, lint, tests, VSIX integrity and real-host smoke tests. */
-const { execFileSync } = require('node:child_process');
+const { createJiti } = require('jiti');
+const processTools = createJiti(__filename).import('../src/core/process.ts');
 const { readFileSync } = require('node:fs');
 const { tmpdir } = require('node:os');
 const { join } = require('node:path');
@@ -37,7 +38,9 @@ function verifyPackage (file) {
     const referenced = [manifest.main, manifest.icon,
         ...manifest.contributes.languages.map(x => x.configuration).filter(Boolean),
         ...manifest.contributes.grammars.map(x => x.path),
-        ...(manifest.contributes.snippets || []).map(x => x.path)];
+        ...(manifest.contributes.snippets || []).map(x => x.path),
+        ...Object.values(manifest.contributes.viewsContainers || {}).flat().map(view => view.icon),
+        ...Object.values(manifest.contributes.icons || {}).map(icon => icon.default?.fontPath).filter(Boolean)];
     for (const path of referenced) {
         assert(entries.has('extension/' + path.replace(/^\.\//, '')), 'Missing manifest asset: ' + path);
     }
@@ -55,30 +58,30 @@ function verifyPackage (file) {
 }
 
 /** Execute one gate; any nonzero result stops validation and prevents a merge. */
-function step (args) {
+async function step (args) {
     console.log('CHECK: pnpm ' + args.join(' '));
-    try {
-        execFileSync('pnpm', args, { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024, timeout: 180_000 });
-    } catch (error) {
-        console.error(error.stdout?.slice(-12_000) || error.message);
-        console.error(error.stderr?.slice(-6000) || '');
-        throw error;
-    }
+    const { executeCommand, requireSuccess } = await processTools;
+    const result = await executeCommand({ executable: 'pnpm', args, cwd: process.cwd(), timeoutMs: 180_000 });
+    if (!result.success) { console.error(result.stdout.slice(-12_000)); console.error(result.stderr.slice(-6000)); }
+    requireSuccess(result);
 }
 
 /** Run shared checks in order so builds and package-manager operations never race. */
-function validate () {
+async function validate () {
     const manifest = require('../package.json');
-    step(['install', '--frozen-lockfile']);
-    step(['typecheck']);
-    step(['typecheck:ui']);
-    step(['lint']);
-    if (manifest.scripts.test) { step(['test']); }
+    await step(['install', '--frozen-lockfile']);
+    await step(['typecheck']);
+    await step(['typecheck:ui']);
+    await step(['lint']);
+    await step(['docs:check']);
+    if (manifest.scripts.test) { await step(['test']); }
     const archive = join(tmpdir(), 'nuxtr-validation.vsix');
-    step(['package', '--out', archive]);
+    await step(['package', '--out', archive]);
     verifyPackage(archive);
-    step(['test:extension']);
+    await step(['test:sidebar']);
+    await step(['test:extension']);
+    await step(['test:packaged']);
     console.log('PASS: all merge gates');
 }
-if (require.main === module) { validate(); }
+if (require.main === module) { validate().catch(error => { console.error(error); process.exitCode = 1; }); }
 module.exports = { archiveEntries, verifyPackage };

@@ -4,7 +4,7 @@ import { window } from 'vscode';
 import { nitroDefaultTemplate, nitroPluginTemplate, nitroUtilTemplate, serverMiddlewareTemplate } from '../templates';
 import { createDir, createFile, createSubFolders, generateScaffoldTemplate, hasServerDir, normalizeFileExtension, projectSrcDirectory, scaffoldExtension, showSubFolderQuickPick } from '../utils';
 
-/** Prompt for a name and create the selected nitro scaffold. */
+/** Prompt for a API handler name and create it under the configured Nitro server directory. */
 const createNitroAPI = () => {
     return window
         .showInputBox({
@@ -31,7 +31,7 @@ const createNitroAPI = () => {
         });
 };
 
-/** Prompt for a name and create the selected nitro scaffold. */
+/** Prompt for a server route name and create it under the configured Nitro server directory. */
 const createNitroRoute = () => {
     return window
         .showInputBox({
@@ -58,7 +58,7 @@ const createNitroRoute = () => {
         });
 }
 
-/** Prompt for a name and create the selected nitro scaffold. */
+/** Prompt for a server plugin name and create it under the configured Nitro server directory. */
 const createNitroPlugin = () => {
     return window
         .showInputBox({
@@ -85,7 +85,7 @@ const createNitroPlugin = () => {
         });
 }
 
-/** Prompt for a name and create the selected nitro scaffold. */
+/** Prompt for a server utility name and create it under the configured Nitro server directory. */
 const createNitroUtil = () => {
     return window
         .showInputBox({
@@ -113,7 +113,7 @@ const createNitroUtil = () => {
 
 }
 
-/** Prompt for a name and create the selected nitro scaffold. */
+/** Prompt for a request middleware name and create it under the configured Nitro server directory. */
 const createNitroMiddleware = () => {
     return window
         .showInputBox({

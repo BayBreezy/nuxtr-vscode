@@ -5,7 +5,7 @@ import { join, relative } from 'node:path';
 import semver from 'semver';
 import { resolveDependency } from '../core/catalogs';
 import { DirectoryKind, readStaticConfig, resolveDirectories } from '../core/directories';
-import { configAt } from '../core/project';
+import { configAt, containsPath } from '../core/project';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { window, workspace } from 'vscode';
 import { projectRootDirectory } from '.';
@@ -112,3 +112,12 @@ export function projectDirectories () {
 
 /** Resolve a logical Nuxt directory to its absolute filesystem location. */
 export function projectDirectory (kind: DirectoryKind): string { return projectDirectories()[kind]; }
+
+/** Classify an Explorer scaffold safely, asking for an explicit runtime when directory configuration is computed/inherited. */
+export async function directServerScaffold (path: string): Promise<boolean | undefined> {
+    try { return containsPath(projectDirectory('server'), path); }
+    catch {
+        const runtime = await window.showQuickPick(['Nuxt application', 'Nitro server'], { placeHolder: 'Cannot resolve inherited/computed directories. Choose the runtime for this Explorer file.' });
+        return runtime ? runtime === 'Nitro server' : undefined;
+    }
+}

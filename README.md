@@ -19,6 +19,23 @@
 
 <br>
 
+### Compatibility and project selection
+
+Requires VS Code **1.141.0 or newer**. Nuxt 3 and 4 are actively supported; existing Nuxt 2 workflows are retained where practical. The installed extension uses VS Code's runtime; contributors use Node 24.20.0 and pnpm 12.10.1.
+
+Run **Nuxtr: Select Project** for nested or multiple applications. Explorer actions and completion providers use the resource's project. The existing monorepo directory setting remains an explicit override. Application directories follow Nuxt's configured layout and legacy-layout detection; server/public/shared paths are resolved separately. Computed or inherited directories require an explicit Explorer destination when safe automatic resolution is unavailable.
+
+### Scaffolding and dependency updates
+
+- Store reusable page, layout, component, composable and API templates in the project's `.vscode` directory. Existing page/layout template settings continue to work; `nuxtr.fileTemplates.*.defaultTemplate` selects optional additional defaults.
+- `nuxtr.scaffolding.defaultLanguage` selects `ts` (default) or `js`. `nuxtr.scaffolding.composableUsePrefix` optionally generates filenames such as `useCounter.ts`; the default remains unchanged. Vue scripts use the existing Vue language setting.
+- **Nuxtr: Create Nitro Task** generates nested names such as `db:migrate` inside the configured `server/tasks` directory. **Enable Experimental Nitro Tasks** is an explicit opt-in. Helpers match the installed Nitro generation. See [Nitro 2 tasks](https://v2.nitro.build/guide/tasks) and [current Nitro tasks](https://nitro.build/docs/tasks).
+- Tailwind configuration offers Tailwind 4 with its Vite plugin, or the legacy Tailwind 3 Nuxt module recipe. Existing files and conflicting integrations are protected.
+- pnpm default/named catalogs resolve from workspace YAML, and updates preserve catalog references. Modules default to development dependencies unless their metadata requires runtime installation.
+- The module sidebar includes the official ESLint module, a bundled offline snapshot and cached successful refreshes. **Refresh catalogue** fetches the [official modules feed](https://github.com/nuxt/modules#using-cdn) through the extension host. Dependency updates provide verified GitHub release links with an npm page fallback.
+
+Nuxt/Nitro snippet toggles apply immediately. Suggestions avoid import statements and never modify the installed extension manifest. Ordinary log files retain their existing language support.
+
 ### What does Nuxtr do?
 
 - [Project Creation](#project-creation)

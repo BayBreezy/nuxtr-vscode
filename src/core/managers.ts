@@ -47,6 +47,6 @@ export function managerCommand (manager: ManagerName, action: 'install' | 'add' 
 }
 
 /** Render typed arguments as a safely quoted terminal command; Windows uses the default PowerShell convention. */
-export function terminalCommand (command: ProcessCommand): string {
-    return (process.platform === 'win32' ? '& ' : '') + [command.executable, ...command.args].map(value => process.platform === 'win32' ? `'${value.replaceAll('\'', '\'\'')}'` : `'${value.replaceAll('\'', '\'\\"\'\\"\'')}'`).join(' ');
+export function terminalCommand (command: ProcessCommand, platform: NodeJS.Platform = process.platform): string {
+    return (platform === 'win32' ? '& ' : '') + [command.executable, ...command.args].map(value => platform === 'win32' ? `'${value.replaceAll('\'', '\'\'')}'` : `'${value.replaceAll('\'', '\'"\'"\'')}'`).join(' ');
 }
