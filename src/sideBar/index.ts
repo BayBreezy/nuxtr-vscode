@@ -1,8 +1,8 @@
 /** Present the Vue sidebar and dispatch project dependency, module and template actions. */
 import { managerCommand, terminalCommand } from '../core/managers';
 import { choosePackageManager } from '../utils/dependency';
+import { ModuleMetadata, canonicalPackageName, installThenConfigure, moduleIsDevelopment } from '../core/modules';
 import { destr } from 'destr'
-import { exec } from 'node:child_process'
 import { existsSync, readFileSync, readdirSync, unlinkSync } from 'node:fs'
 import { capitalize } from 'string-ts'
 import * as vscode from 'vscode'
@@ -180,71 +180,21 @@ export class ModulesView implements vscode.WebviewViewProvider {
     `
     }
 
-    /** Install a Nuxt module and update its configuration after installation. */
-    private async installModule (module: any) {
-        const command = await getInstallationCommand(
-            module.npm,
-            module['dependency-type'] === 'dev' ? true : false
-        )
-        await vscode.window.withProgress(
-            {
-                location: vscode.ProgressLocation.Notification,
-                title: `Installing ${module.npm}...`,
-                cancellable: false,
+    /** Install first, then edit configuration; report an installed package separately from a failed config edit. */
+    private async installModule (module: ModuleMetadata) {
+        const name = canonicalPackageName(module);
+        const result = await installThenConfigure(
+            async () => {
+                const command = await getInstallationCommand(name, moduleIsDevelopment(module));
+                return runCommand({ command, message: `Installing ${name}`, successMessage: `${name} installed`, errorMessage: `Failed to install ${name}`, logger: true });
             },
-            () => {
-                return new Promise((resolve, reject) => {
-                    const child = exec(
-                        command,
-                        { cwd: projectRootDirectory() },
-                        (error: any, stdout: any, stderr: any) => {
-                            if (error) {
-                                reject(error.message)
-                            } else if (stderr) {
-                                reject(stderr)
-                            } else {
-                                resolve(stdout)
-                            }
-                        }
-                    )
-
-                    child.on('exit', (code) => {
-                        if (code === 0) {
-                            this.addNuxtModule(module)
-                        } else {
-                            vscode.window.showErrorMessage(
-                                `${module.npm} is installed but we got an error in configuration, please make sure all modules are configured`
-                            )
-                            this.postMessage({
-                                command: 'moduleInstalled',
-                                installed: false,
-                                cmd: module.npm,
-                            })
-                        }
-                    })
-                })
-            }
-        )
-    }
-
-    /** Add the canonical module to Nuxt configuration after it is installed. */
-    private async addNuxtModule (module: any) {
-        await updateNuxtConfig('add-module', module)
-        this.postMessage({
-            command: 'moduleInstalled',
-            installed: true,
-            cmd: module.npm,
-        })
-        await vscode.window
-            .showInformationMessage(
-                `${module.npm} is installed successfully and added to Nuxt config`,
-                'Open documentation'
-            )
-            .then((value) => {
-                if (value === 'Open documentation') {
-                    openExternalLink(module.website)
-                }
-            })
+            () => updateNuxtConfig('add-module', name)
+        );
+        this.postMessage({ command: 'moduleInstalled', installed: result.installed, configured: result.configured, cmd: name });
+        if (!result.installed) { return; }
+        await this.updateModules();
+        if (result.configured) { vscode.window.showInformationMessage(`${name} installed and configured.`); }
+        else { vscode.window.showErrorMessage(`${name} is installed, but its Nuxt config edit failed: ${String(result.error)}. Add it manually to modules/extends.`); }
     }
 
     /** Upgrade a selected module through dependency management. */
@@ -261,8 +211,10 @@ export class ModulesView implements vscode.WebviewViewProvider {
             'No'
         )
         if (confirmation === 'Yes') {
-            await removeNuxtModule(module)
-            await removePackage(module)
+            const name = canonicalPackageName(module);
+            await removePackage(name);
+            try { removeNuxtModule(name); } catch (error) { vscode.window.showErrorMessage(`${name} removed, but configuration cleanup failed: ${String(error)}`); }
+            await this.updateModules();
         }
     }
     /** Open a project snippet file in the editor. */
