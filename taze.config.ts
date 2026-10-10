@@ -5,9 +5,6 @@ export default defineConfig({
     force: false,
     write: false,
     install: false,
-    packageMode: {
-        'nuxi-nightly': 'latest'
-    },
     exclude: [
         '@types/vscode'
     ],

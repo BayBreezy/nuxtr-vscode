@@ -4,8 +4,8 @@ nodeLinker: hoisted
 allowBuilds:
   esbuild: true
   '@vscode/vsce-sign': true
-overrides:
-  eslint: ^9.11.0
 minimumReleaseAgeExclude:
   - prettier@3.9.10
   - '@nuxt/schema@4.6.1'
+  - '@vue/language-core@3.3.13'
+  - vue-tsc@3.3.13
