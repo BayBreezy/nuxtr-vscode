@@ -1,3 +1,5 @@
+/** Shared VS Code configuration, workspace paths, terminal actions and project-local imports. */
+import { createJiti } from 'jiti';
 import { exec } from 'node:child_process';
 import type { WorkspaceConfiguration } from 'vscode';
 import { ProgressLocation, ThemeIcon, Uri, Webview, env, window, workspace } from 'vscode';
@@ -6,6 +8,7 @@ import type { NuxtrConfiguration } from '../types';
 import { hasSrcDir } from './nuxt';
 import { logger } from './outputChannel';
 
+/** Create a nonce for scripts loaded by the sidebar webview. */
 export const getNonce = () => {
     let text = '';
     const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -15,10 +18,12 @@ export const getNonce = () => {
     return text;
 };
 
+/** Convert an extension asset path into a URI the webview can load. */
 export const getUri = (webview: Webview, extensionUri: Uri, pathList: string[]) => {
     return webview.asWebviewUri(Uri.joinPath(extensionUri, ...pathList));
 };
 
+/** Resolve the current project root, honoring the configured monorepo directory. */
 export const projectRootDirectory = (): string => {
     const configuration = nuxtrConfiguration().monorepoMode.DirectoryName;
     const workspaceFolder = workspace.workspaceFolders?.[0]?.uri.fsPath;
@@ -35,25 +40,30 @@ export const projectRootDirectory = (): string => {
 };
 
 
+/** Resolve the application source directory declared in Nuxt configuration. */
 export const projectSrcDirectory = async (): Promise<string> => {
     const projectRootDir = projectRootDirectory();
     const srcDir = await hasSrcDir();
     return srcDir === '/' ? projectRootDir : projectRootDir + srcDir;
 };
 
+/** Open a documentation or repository URL in the user’s browser. */
 export const openExternalLink = (url: string) => {
     env.openExternal(Uri.parse(url));
 };
 
+/** Read Nuxtr settings from the current VS Code workspace. */
 export const nuxtrConfiguration = (): NuxtrConfiguration => {
     const configuration: WorkspaceConfiguration = workspace.getConfiguration('nuxtr');
     return configuration as unknown as NuxtrConfiguration;
 };
 
+/** Read editor settings used by file generators. */
 export const vscodeConfiguration = (): WorkspaceConfiguration => {
     return workspace.getConfiguration();
 }
 
+/** Reuse a named terminal or create one, then send the requested project command. */
 export const newTerminal = (terminalName: string, command: string, cwd?: string) => {
     const existingTerminal = window.terminals.find(terminal => terminal.name === terminalName);
 
@@ -73,6 +83,7 @@ export const newTerminal = (terminalName: string, command: string, cwd?: string)
 };
 
 
+/** Execute a project command with progress and success/failure notifications. */
 export const runCommand = async (args: {
     command: string
     message: string
@@ -127,11 +138,12 @@ export const runCommand = async (args: {
 };
 
 
-const _jiti = require('jiti')(projectRootDirectory(), { esmResolve: true, interopDefault: true });
+const _jiti = createJiti(projectRootDirectory(), { interopDefault: true });
 
+/** Load a package from the Nuxt project and offer installation if it is missing. */
 export async function tryImport (path: string): Promise<undefined | unknown> {
     try {
-        return _jiti(path)
+        return await _jiti.import(path)
     } catch {
         const response = await window.showErrorMessage(
             'Dependencies are not installed. Install dependencies first?',
