@@ -1,12 +1,12 @@
 /** Prompt for and scaffold nitro files in the selected project’s resolved directories. */
 import { projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode';
-import { nitroDefaultTemplate, nitroPluginTemplate, nitroUtilTemplate } from '../templates';
+import { nitroDefaultTemplate, nitroPluginTemplate, nitroUtilTemplate, serverMiddlewareTemplate } from '../templates';
 import { createDir, createFile, createSubFolders, hasServerDir, normalizeFileExtension, projectSrcDirectory, showSubFolderQuickPick } from '../utils';
 
 /** Prompt for a name and create the selected nitro scaffold. */
 const createNitroAPI = () => {
-    window
+    return window
         .showInputBox({
             prompt: 'What is your API name?',
             placeHolder: 'API name',
@@ -22,7 +22,7 @@ const createNitroAPI = () => {
 
             const subFolders = await createSubFolders(apisDir, 'api');
 
-            showSubFolderQuickPick({
+            return showSubFolderQuickPick({
                 name,
                 subFolders,
                 commandType: 'api',
@@ -33,7 +33,7 @@ const createNitroAPI = () => {
 
 /** Prompt for a name and create the selected nitro scaffold. */
 const createNitroRoute = () => {
-    window
+    return window
         .showInputBox({
             prompt: 'What is your route name?',
             placeHolder: 'Route name',
@@ -49,7 +49,7 @@ const createNitroRoute = () => {
 
             const subFolders = await createSubFolders(composablesDir, 'route');
 
-            showSubFolderQuickPick({
+            return showSubFolderQuickPick({
                 name,
                 subFolders,
                 commandType: 'route',
@@ -60,7 +60,7 @@ const createNitroRoute = () => {
 
 /** Prompt for a name and create the selected nitro scaffold. */
 const createNitroPlugin = () => {
-    window
+    return window
         .showInputBox({
             prompt: 'What is your plugin name?',
             placeHolder: 'Plugin name',
@@ -76,7 +76,7 @@ const createNitroPlugin = () => {
 
             const subFolders = await createSubFolders(composablesDir, 'nitroPlugin');
 
-            showSubFolderQuickPick({
+            return showSubFolderQuickPick({
                 name,
                 subFolders,
                 commandType: 'nitroPlugin',
@@ -87,7 +87,7 @@ const createNitroPlugin = () => {
 
 /** Prompt for a name and create the selected nitro scaffold. */
 const createNitroUtil = () => {
-    window
+    return window
         .showInputBox({
             prompt: 'What is your utility name?',
             placeHolder: 'Utility name',
@@ -103,7 +103,7 @@ const createNitroUtil = () => {
 
             const subFolders = await createSubFolders(composablesDir, 'nitroUtil');
 
-            showSubFolderQuickPick({
+            return showSubFolderQuickPick({
                 name,
                 subFolders,
                 commandType: 'nitroUtil',
@@ -115,7 +115,7 @@ const createNitroUtil = () => {
 
 /** Prompt for a name and create the selected nitro scaffold. */
 const createNitroMiddleware = () => {
-    window
+    return window
         .showInputBox({
             prompt: 'What is your middleware name?',
             placeHolder: 'Middleware name',
@@ -130,11 +130,11 @@ const createNitroMiddleware = () => {
             const middlewareDir = `${await projectSrcDirectory()}/${await hasServerDir()}/middleware`
             const subFolders = await createSubFolders(middlewareDir, 'nitroMiddleware');
 
-            showSubFolderQuickPick({
+            return showSubFolderQuickPick({
                 name,
                 subFolders,
                 commandType: 'nitroMiddleware',
-                content: nitroDefaultTemplate
+                content: serverMiddlewareTemplate
             });
         });
 }
@@ -142,19 +142,17 @@ const createNitroMiddleware = () => {
 
 /** Create a file in the Explorer folder supplied by the command. */
 const directCreateNitroAPI = (path: string) => {
-    window
+    return window
         .showInputBox({
             prompt: 'What is your api name?',
             placeHolder: 'api name',
         })
-        .then(async (name) => {
+        .then((name) => {
             if (!name) { return }
 
-            await createDir('server')
-            await createDir('server/api')
 
             const filePath = `${path}/${normalizeFileExtension(name, '.ts')}.ts`
-            createFile({
+            return createFile({
                 fileName: `${name}.ts`,
                 content: nitroDefaultTemplate,
                 fullPath: filePath,
@@ -164,7 +162,7 @@ const directCreateNitroAPI = (path: string) => {
 
 /** Create a file in the Explorer folder supplied by the command. */
 const directCreateNitroRoute = (path: string) => {
-    window
+    return window
         .showInputBox({
             prompt: 'What is your route name?',
             placeHolder: 'Route name',
@@ -172,12 +170,10 @@ const directCreateNitroRoute = (path: string) => {
         .then((name) => {
             if (!name) { return }
 
-            createDir('server')
-            createDir('server/routes')
 
             const filePath = `${path}/${normalizeFileExtension(name, '.ts')}.ts`
 
-            createFile({
+            return createFile({
                 fileName: `${name}.ts`,
                 content: nitroDefaultTemplate,
                 fullPath: filePath,

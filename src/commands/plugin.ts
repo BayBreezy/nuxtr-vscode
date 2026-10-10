@@ -6,7 +6,7 @@ import { createDir, createFile, createSubFolders, hasServerDir, normalizeFileExt
 
 /** Prompt for a name and create the selected plugin scaffold. */
 const createPlugin = () => {
-    window
+    return window
         .showInputBox({
             prompt: 'What is your plugin name?',
             placeHolder: 'plugin name',
@@ -20,7 +20,7 @@ const createPlugin = () => {
 
             const subFolders = await createSubFolders(pluginsDir, 'plugins')
 
-            showSubFolderQuickPick({
+            return showSubFolderQuickPick({
                 name,
                 subFolders,
                 commandType: 'plugins',
@@ -35,7 +35,7 @@ const createPlugin = () => {
 const directCreatePlugin = async (path: string) => {
     const serverDir = await hasServerDir()
 
-    window
+    return window
         .showInputBox({
             prompt: 'What is your plugin name?',
             placeHolder: 'plugin name',
@@ -46,7 +46,7 @@ const directCreatePlugin = async (path: string) => {
             const filePath = `${path}/${normalizeFileExtension(name, '.ts')}.ts`
 
 
-            createFile({
+            return createFile({
                 fileName: `${name}.ts`,
                 content: filePath.includes(`${serverDir}`) ? nitroPluginTemplate : nuxtPluginTemplate,
                 fullPath: filePath,

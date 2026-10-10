@@ -4,12 +4,12 @@ import { window } from 'vscode'
 import { composableTemplate } from '../templates'
 import { createDir, createFile, createSubFolders, normalizeFileExtension, projectSrcDirectory, showSubFolderQuickPick } from '../utils'
 
-/** Prompt for a name and create the selected composable scaffold. */
+/** Remove an existing use prefix before generating the exported composable name. */
 const neglectUsePrefix = (name: string) => name.replace(/^use/i, '')
 
 /** Prompt for a name and create the selected composable scaffold. */
 const createComposable = () => {
-    window
+    return window
         .showInputBox({
             prompt: 'What is your composable name?',
             placeHolder: 'composable name',
@@ -20,11 +20,11 @@ const createComposable = () => {
 
             const composablesDir = projectDirectory('composables')
 
-            createDir('composables')
+            await createDir('composables')
 
             const subFolders = await createSubFolders(composablesDir, 'composables')
 
-            showSubFolderQuickPick({
+            return showSubFolderQuickPick({
                 name,
                 subFolders,
                 commandType: 'composables',
@@ -36,7 +36,7 @@ const createComposable = () => {
 
 /** Create a file in the Explorer folder supplied by the command. */
 const directCreateComposable = (path: string) => {
-    window
+    return window
         .showInputBox({
             prompt: 'What is your composable name?',
             placeHolder: 'composable name',
@@ -46,7 +46,7 @@ const directCreateComposable = (path: string) => {
 
             const filePath = `${path}/${normalizeFileExtension(name, '.ts')}.ts`
 
-            createFile({
+            return createFile({
                 fileName: `${name}.ts`,
                 content: composableTemplate(neglectUsePrefix(name)),
                 fullPath: filePath,

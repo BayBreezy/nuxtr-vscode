@@ -5,7 +5,7 @@ import { createDir, createFile, createSubFolders, generateVueFileBasicTemplate, 
 
 /** Prompt for a name and create the selected component scaffold. */
 const createComponent = () => {
-    window
+    return window
         .showInputBox({
             prompt: 'What is your component name?',
             placeHolder: 'component name',
@@ -19,7 +19,7 @@ const createComponent = () => {
 
             const subFolders = await createSubFolders(componentsDir, 'components')
 
-            showSubFolderQuickPick({
+            return showSubFolderQuickPick({
                 name,
                 subFolders,
                 commandType: 'components',
@@ -30,7 +30,7 @@ const createComponent = () => {
 
 /** Create a file in the Explorer folder supplied by the command. */
 const directCreateComponent = (path: string) => {
-    window
+    return window
         .showInputBox({
             prompt: 'What is your component name?',
             placeHolder: 'component name',
@@ -40,7 +40,7 @@ const directCreateComponent = (path: string) => {
 
             const filePath = `${path}/${name}.vue`
 
-            createFile({
+            return createFile({
                 fileName: `${name}.vue`,
                 content: generateVueFileBasicTemplate('component'),
                 fullPath: filePath,

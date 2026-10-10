@@ -1,9 +1,10 @@
+/** Generate project-aware Vue and Pinia scaffolds, honoring configured custom templates. */
 import { readFileSync } from 'node:fs';
-import { nuxtrConfiguration, projectRootDirectory, vscodeConfiguration } from '.';
+import { nuxtrConfiguration, projectRootDirectory } from '.';
 import { generateScriptTag, generateStyleTag, piniaOptionsContent, piniaSetupContent, templateTag } from '../templates';
 
-const eolConfiguration = vscodeConfiguration().files.eol
 
+/** Read a selected project template or use the configured default scaffold. */
 export function generateVueFileTemplate (type: 'page' | 'layout', template?: string) {
     const userDefaultTemplate = template || (type === 'page'
         ? nuxtrConfiguration().vueFiles.pages.defaultTemplate
@@ -17,6 +18,7 @@ export function generateVueFileTemplate (type: 'page' | 'layout', template?: str
     }
 }
 
+/** Combine Vue tags in the configured order and languages. */
 export function generateVueFileBasicTemplate (type: string) {
     let fileTemplate = ''
     const templateLang = nuxtrConfiguration().vueFiles.template.defaultLanguage
@@ -29,7 +31,7 @@ export function generateVueFileBasicTemplate (type: string) {
 
     const scriptTag = generateScriptTag(scriptType, lang)
 
-    const eol = eolConfiguration === '\n' ? '\n\n' : '\n\n';
+    const eol = '\n\n';
 
     if (firstTag === 'template') {
         fileTemplate = templateTag(type, templateLang);
@@ -46,10 +48,10 @@ export function generateVueFileBasicTemplate (type: string) {
         fileTemplate += generateStyleTag(styleLang, isScoped);
     }
 
-    // eolConfiguration !== '\n' ? normalizeLFToCRLF(fileTemplate) :
     return fileTemplate
 }
 
+/** Select the configured Pinia setup/options starter. */
 export function generatePiniaTemplates (name: string) {
     return nuxtrConfiguration().piniaFiles.defaultTemplate === 'options' ? piniaOptionsContent(name) : piniaSetupContent(name)
 }
