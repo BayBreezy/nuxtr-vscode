@@ -6,7 +6,7 @@ import { createDir, createFile, createSubFolders, hasServerDir, normalizeFileExt
 
 /** Prompt for a name and create the selected middleware scaffold. */
 const createMiddleware = () => {
-    window
+    return window
         .showInputBox({
             prompt: 'What is your middleware name?',
             placeHolder: 'middleware name',
@@ -21,7 +21,7 @@ const createMiddleware = () => {
 
             const subFolders = await createSubFolders(middlewareDir, 'middleware')
 
-            showSubFolderQuickPick({
+            return showSubFolderQuickPick({
                 name,
                 subFolders,
                 commandType: 'middleware',
@@ -36,7 +36,7 @@ const createMiddleware = () => {
 const directCreateMiddleware = async (path: string) => {
     const serverDir = await hasServerDir()
 
-    window
+    return window
         .showInputBox({
             prompt: 'What is your middleware name?',
             placeHolder: 'middleware name',
@@ -46,7 +46,7 @@ const directCreateMiddleware = async (path: string) => {
 
             const filePath = `${path}/${normalizeFileExtension(name, '.ts')}.ts`
 
-            createFile({
+            return createFile({
                 fileName: `${name}.ts`,
                 content: filePath.includes(`${serverDir}`) ? nitroDefaultTemplate : nuxtMiddlewareTemplate,
                 fullPath: filePath,

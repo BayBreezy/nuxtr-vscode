@@ -42,7 +42,7 @@ async function detectPiniaModule () {
 
 /** Prompt for a name and create the selected store scaffold. */
 const createStore = () => {
-    window
+    return window
         .showInputBox({
             prompt: 'What is your store name?',
             placeHolder: 'store name',
@@ -67,7 +67,7 @@ const createStore = () => {
 
 /** Create a file in the Explorer folder supplied by the command. */
 const directCreateStore = (path: string) => {
-    window
+    return window
         .showInputBox({
             prompt: 'What is your store name?',
             placeHolder: 'store name',

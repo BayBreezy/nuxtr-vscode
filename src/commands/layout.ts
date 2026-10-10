@@ -7,7 +7,7 @@ import { generateVueFileTemplate } from '../utils/files'
 
 /** Prompt for a name and create the selected layout scaffold. */
 const createLayout = () => {
-    window
+    return window
         .showInputBox({
             prompt: 'What is your layout name?',
             placeHolder: 'Layout name',
@@ -15,11 +15,11 @@ const createLayout = () => {
         .then(async (name) => {
             if (!name) { return }
 
-            createDir('layouts')
+            await createDir('layouts')
 
             const filePath = `${await projectSrcDirectory()}/layouts/${normalizeFileExtension(name, '.vue')}.vue`
 
-            createFile({
+            return createFile({
                 fileName: `${name}.vue`,
                 content: generateVueFileTemplate('layout'),
                 fullPath: filePath,
@@ -29,7 +29,7 @@ const createLayout = () => {
 
 /** Create a file in the Explorer folder supplied by the command. */
 const directCreateLayout = (path: string) => {
-    window
+    return window
         .showInputBox({
             prompt: 'What is your layout name?',
             placeHolder: 'layout name',
@@ -39,7 +39,7 @@ const directCreateLayout = (path: string) => {
 
             const filePath = `${path}/${normalizeFileExtension(name, '.vue')}.vue`
 
-            createFile({
+            return createFile({
                 fileName: `${name}.vue`,
                 content: generateVueFileTemplate('layout'),
                 fullPath: filePath,

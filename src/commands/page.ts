@@ -6,7 +6,7 @@ import { generateVueFileTemplate } from '../utils/files'
 
 /** Prompt for a name and create the selected page scaffold. */
 const createPage = () => {
-    window
+    return window
         .showInputBox({
             prompt: 'What is your page name?',
             placeHolder: 'page name',
@@ -20,7 +20,7 @@ const createPage = () => {
 
             const subFolders = await createSubFolders(pagesDir, 'pages')
 
-            showSubFolderQuickPick({
+            return showSubFolderQuickPick({
                 name,
                 subFolders,
                 commandType: 'pages',
@@ -31,7 +31,7 @@ const createPage = () => {
 
 /** Create a file in the Explorer folder supplied by the command. */
 function directCreatePage (path: string) {
-    window
+    return window
         .showInputBox({
             prompt: 'What is your page name?',
             placeHolder: 'page name',
@@ -41,7 +41,7 @@ function directCreatePage (path: string) {
 
             const filePath = `${path}/${normalizeFileExtension(name, '.vue')}.vue`
 
-            createFile({
+            return createFile({
                 fileName: `${name}.vue`,
                 content: generateVueFileTemplate('page'),
                 fullPath: filePath,

@@ -1,6 +1,6 @@
 /** Create protected project files and directory/template pickers for the selected Nuxt context. */
 import { existsSync, mkdirSync, readdirSync } from 'node:fs';
-import { TextEncoder } from 'node:util';
+import { formatGeneratedContent, normalizedExtension,  writeNewFile } from '../core/generated';
 import { dirname, isAbsolute, resolve } from 'node:path';
 import { DirectoryKind } from '../core/directories';
 import { projectDirectories } from './nuxt';
@@ -18,7 +18,7 @@ const createDirectoryAndFile = async (componentName: any, commandType: string, c
 
     const { type } = await getCommandType(commandType);
 
-    window
+    return window
         .showInputBox({
             prompt: 'What is your directory name?',
             placeHolder: 'Directory name',
@@ -26,12 +26,9 @@ const createDirectoryAndFile = async (componentName: any, commandType: string, c
         .then(async (name) => {
             if (name !== undefined && trim(name) !== '') {
 
-                const workspaceFolder = workspace.workspaceFolders?.[0];
-                const cwd = workspaceFolder?.uri.fsPath;
-
-                if (cwd !== undefined) {
+                {
                     const dir = resolve(await projectSrcDirectory(), type.path);
-                    const directoryPath = join(dir, name);
+                    const directoryPath = join(dir, normalizeFileExtension(name, '.unused'));
 
                     if (existsSync(directoryPath)) {
                         window.showWarningMessage(
@@ -40,7 +37,7 @@ const createDirectoryAndFile = async (componentName: any, commandType: string, c
                     } else {
                         await workspace.fs.createDirectory(Uri.file(directoryPath));
 
-                        createFile({
+                        return createFile({
                             fileName: componentName,
                             content,
                             fullPath: `${await projectSrcDirectory()}/${type.path}/${name}/${normalizeFileExtension(componentName, type.extension)}${type.extension}`,
@@ -84,7 +81,7 @@ export const showSubFolderQuickPick = async (args: {
 }) => {
     const { type } = await getCommandType(args.commandType);
 
-    window
+    return window
         .showQuickPick(args.subFolders, { placeHolder: 'Select a subfolder' })
         .then(async (selection) => {
             if (selection === undefined) {
@@ -96,16 +93,14 @@ export const showSubFolderQuickPick = async (args: {
                     const path = `${normalizeFileExtension(args.name, type.extension)}${type.extension}`;
                     const fullPath = `${await projectSrcDirectory()}/${type.path}/${path}`;
 
-                    createFile({
+                    return createFile({
                         fileName: args.name,
                         content: args.content,
                         fullPath
                     });
-                    break;
                 }
                 case 'Create new folder...': {
-                    createDirectoryAndFile(normalizeFileExtension(args.name, type.extension), type.name, args.content);
-                    break;
+                    return createDirectoryAndFile(normalizeFileExtension(args.name, type.extension), args.commandType, args.content);
                 }
                 default: {
                     const fileNameAndPath = `${selection}/${normalizeFileExtension(args.name, type.extension)}${type.extension}`;
@@ -115,7 +110,6 @@ export const showSubFolderQuickPick = async (args: {
                         content: args.content,
                         fullPath: `${await projectSrcDirectory()}/${type.path}/${fileNameAndPath}`,
                     });
-                    break;
                 }
             }
         });
@@ -123,21 +117,15 @@ export const showSubFolderQuickPick = async (args: {
 
 /** Ensure parents exist and create a new file, preserving existing files. */
 export const createFile = async (args: { fileName: string; content: string; fullPath: string }) => {
-    const parentDirectory = Uri.file(args.fullPath);
-
-    if (existsSync(parentDirectory.fsPath)) {
-        window.showErrorMessage(`File ${args.fileName} already exists`);
-        return;
-    }
-
-    await workspace.fs.createDirectory(Uri.file(dirname(args.fullPath)));
-    await workspace.fs.writeFile(parentDirectory, new TextEncoder().encode(args.content));
-
-    if (nuxtrConfiguration().openItemsAfterCreation) {
-        workspace.openTextDocument(parentDirectory).then((doc) => {
-            window.showTextDocument(doc);
-        });
-    }
+    const target = Uri.file(args.fullPath);
+    const languageId = args.fullPath.endsWith('.vue') ? 'vue' : (args.fullPath.endsWith('.ts') ? 'typescript' : 'javascript');
+    const editor = workspace.getConfiguration('editor', { uri: target, languageId });
+    const eol = workspace.getConfiguration('files', target).get('eol') === '\r\n' ? '\r\n' : '\n';
+    const content = formatGeneratedContent(args.content, editor.get('insertSpaces', true), editor.get('tabSize', 2), eol);
+    const created = await writeNewFile(target.fsPath, content);
+    if (!created) { window.showErrorMessage(`File ${args.fileName} already exists`); return false; }
+    if (nuxtrConfiguration().openItemsAfterCreation) { await window.showTextDocument(await workspace.openTextDocument(target)); }
+    return true;
 };
 
 /** Save a named Vue template in the selected project’s .vscode directory. */
@@ -147,25 +135,25 @@ export const createVueTemplate = (content: string, type: string) => {
         mkdirSync(`${projectRootDirectory()}/.vscode`);
     }
 
-    window
+    return window
         .showInputBox({
             prompt: 'What is your page template name?',
             placeHolder: 'Page template name',
         })
         .then((name) => {
             if (name !== undefined && trim(name) !== '') {
-                createFile({
+                return createFile({
                     fileName: name,
                     content,
-                    fullPath: `${projectRootDirectory()}/.vscode/${name}.${type}-template`
+                    fullPath: `${projectRootDirectory()}/.vscode/${normalizeFileExtension(name, `.${type}-template`)}.${type}-template`
                 });
             }
         });
 
 };
 
-/** Convert a scaffold name into a PascalCase template identifier. */
-export const normalizeName = (name: string) => split(trim(split(name, '.')[0]), '-').map((value) => capitalize(value)).join('');
-
 /** Remove a supplied suffix before the caller appends the expected extension. */
-export const normalizeFileExtension = (name: string, extension: string) => endsWith(name, extension) ? replace(name, extension, '') : name
+export const normalizeFileExtension = normalizedExtension;
+
+/** Convert a scaffold name into a safe PascalCase identifier. */
+export { normalizedIdentifier as normalizeName } from '../core/generated';
