@@ -8,7 +8,6 @@ export {
     projectRootDirectory,
     projectSrcDirectory,
     runCommand,
-    tryImport,
     vscodeConfiguration
 } from './global'
 

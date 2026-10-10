@@ -1,8 +1,9 @@
+<!-- Select a filter value with an accessible menu and owned document listeners. -->
 <template>
   <div class="relative" ref="root">
     <button
       class="relative block w-full rounded-md border border-[var(--vscode-dropdown-border)] bg-[var(--vscode-dropdown-background)] px-3 py-2 pr-10 text-[var(--vscode-foreground)]"
-      @click.prevent="toggleMenu()"
+      :aria-expanded="dropdownOpen" @click.prevent="toggleMenu()"
     >
       <span class="flex text-left">{{ label }}</span>
       <span
@@ -24,6 +25,7 @@
           ></path>
         </svg>
       </span>
+    </button>
       <div
         class="absolute right-0 z-10 mt-3.5 flex max-h-[230px] flex-col gap-0.5 overflow-y-auto rounded-md border border-[var(--vscode-dropdown-border)] bg-[var(--vscode-dropdown-background)] p-1"
         v-show="dropdownOpen"
@@ -61,12 +63,12 @@
           </span>
         </button>
       </div>
-    </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { useDocumentEvent } from "../composables/events";
+import { ref, watch } from "vue";
 
 // define props
 const props = defineProps({
@@ -88,18 +90,21 @@ const props = defineProps({
 const emit = defineEmits(["selectedItem"]);
 
 // define refs
-const root = ref(null);
+const root = ref<HTMLElement | null>(null);
 const dropdownOpen = ref(false);
 
 // toggle dropdown menu
+/** Toggle the filter or action menu. */
 const toggleMenu = () => {
   dropdownOpen.value = !dropdownOpen.value;
 };
 
 // select item
+/** Emit the selected filter and close its menu. */
 const selectItem = (item: string) => {
   // emit event to parent
   emit("selectedItem", item);
+  dropdownOpen.value = false;
 };
 
 watch(
@@ -112,11 +117,10 @@ watch(
 );
 
 // close dropdown menu when clicked outside
-onMounted(() => {
-  document.addEventListener("click", (e) => {
-    // @ts-ignore
-    if (root.value?.contains(e.target)) return;
-    dropdownOpen.value = false;
-  });
+/** Close this menu when focus moves outside it through a click. */
+useDocumentEvent("click", (event) => {
+  if ((root.value as HTMLElement | null)?.contains(event.target as Node)) return;
+  dropdownOpen.value = false;
 });
+useDocumentEvent("keydown", (event) => { if ((event as KeyboardEvent).key === "Escape") { dropdownOpen.value = false; } });
 </script>

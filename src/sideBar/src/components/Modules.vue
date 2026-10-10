@@ -1,3 +1,4 @@
+<!-- Filter and display Nuxt modules and layers for installation. -->
 <template>
   <div
     class="sticky top-0 z-10 flex select-none flex-col gap-2 bg-[var(--vscode-sideBar-background)] pb-3"
@@ -32,6 +33,10 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from "vue";
+import { vscode } from "../utilities/vscode";
+onMounted(() => vscode.postMessage({ command: "ready" }));
+import { useHostMessages } from "../composables/events";
 import { useModules, Module } from "../composables/modules";
 import ModuleCard from "./ModuleCard.vue";
 import ModulesFilter from "./ModulesFilter.vue";
@@ -117,6 +122,7 @@ const filteredModules = computed(() => {
   return filteredBySearch;
 });
 
+/** Check the current dependency list using the canonical package name. */
 const isModuleInstalled = (module: string) => {
   if (installedModules.value?.find((m: Module) => m.name === module)) {
     return true;
@@ -124,7 +130,7 @@ const isModuleInstalled = (module: string) => {
   return false;
 };
 
-window.addEventListener("message", (event: any) => {
+useHostMessages( (event: any) => {
   const message = event.data;
   switch (message.command) {
     case "installedModules":

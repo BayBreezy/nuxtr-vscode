@@ -21,6 +21,9 @@ exports.run = async function run () {
             ? vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, 'apps/web') : vscode.workspace.workspaceFolders[0].uri;
         const project = await vscode.commands.executeCommand('nuxtr.selectProject', root);
         assert.equal(project.root, root.fsPath);
+        const config = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(root, 'nuxt.config.ts'));
+        const lenses = await vscode.commands.executeCommand('vscode.executeCodeLensProvider', config.uri);
+        assert(lenses.some(lens => lens.command?.command === 'nuxtr.createModuleAction'), 'Nuxt config module actions must be available');
         const document = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(root, '.nuxtrc'));
         await vscode.window.showTextDocument(document);
         const completions = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', document.uri, new vscode.Position(0, 0));

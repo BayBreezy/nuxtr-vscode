@@ -22,7 +22,7 @@ async function main () {
             const project = scenario === 'nested' ? join(folder, 'apps/web') : folder;
             mkdirSync(project, { recursive: true });
             writeFileSync(join(project, 'package.json'), JSON.stringify({ name: 'smoke', private: true, dependencies: { nuxt: scenario === 'nuxt4' ? '^4.6.1' : '^3.21.11' } }));
-            writeFileSync(join(project, 'nuxt.config.ts'), 'export default defineNuxtConfig({})\n');
+            writeFileSync(join(project, 'nuxt.config.ts'), 'export default defineNuxtConfig({ modules: [], plugins: [], extends: [] })\n');
             writeFileSync(join(project, '.nuxtrc'), '\n');
             if (scenario === 'nuxt4') {
                 mkdirSync(join(project, 'app'), { recursive: true });

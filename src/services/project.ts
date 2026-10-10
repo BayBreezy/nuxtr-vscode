@@ -1,11 +1,13 @@
 /** Bridge pure project discovery to VS Code resource selection, settings and workspace lifecycle. */
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { resolve } from 'node:path';
-import { ExtensionContext, Uri, commands, window, workspace } from 'vscode';
+import { EventEmitter, ExtensionContext, Uri, commands, window, workspace } from 'vscode';
 import { ProjectContext, configAt, discoverProjects, managerRoot, projectForResource } from '../core/project';
 
 const operation = new AsyncLocalStorage<ProjectContext>();
 let projects: ProjectContext[] = [];
+const selectedProjectChanged = new EventEmitter<ProjectContext>();
+export const onProjectSelected = selectedProjectChanged.event;
 let selected: ProjectContext | undefined;
 
 /** Honor the existing monorepo directory setting within the resource's workspace folder. */
@@ -33,6 +35,7 @@ export function currentProject (resource?: Uri): ProjectContext {
 
 /** Choose a command project explicitly when resource, active document and existing selection cannot resolve it. */
 export async function selectProject (resource?: Uri | string, forcePicker = false): Promise<ProjectContext | undefined> {
+    if (!forcePicker && !resource && operation.getStore()) { return operation.getStore(); }
     const uri = typeof resource === 'string' ? Uri.file(resource) : resource;
     const document = uri || window.activeTextEditor?.document.uri;
     let result = configuredProject(document);
@@ -44,7 +47,9 @@ export async function selectProject (resource?: Uri | string, forcePicker = fals
         result = item?.project;
     }
     if (result) {
+        const changed = selected?.root !== result.root;
         selected = result;
+        if (changed) { selectedProjectChanged.fire(result); }
         await commands.executeCommand('setContext', 'nuxtr.selectedProject', result.root);
     }
     return result;
@@ -58,7 +63,7 @@ export async function initializeProjects (context: ExtensionContext, onProjects:
         if (selected && !projects.some(project => project.root === selected?.root)) { selected = undefined; }
         await onProjects(projects.length > 0);
     };
-    context.subscriptions.push(commands.registerCommand('nuxtr.selectProject', async (resource?: Uri | string) => {
+    context.subscriptions.push(selectedProjectChanged, commands.registerCommand('nuxtr.selectProject', async (resource?: Uri | string) => {
         await refresh();
         return selectProject(resource, resource === undefined);
     }), workspace.onDidChangeWorkspaceFolders(refresh));

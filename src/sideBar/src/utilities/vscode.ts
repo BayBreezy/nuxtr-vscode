@@ -1,3 +1,5 @@
+/** Provide a typed host-message bridge and persistent state in VS Code or local previews. */
+import type { SidebarRequest } from '../../../core/messages';
 import type { WebviewApi } from 'vscode-webview';
 
 /**
@@ -12,6 +14,7 @@ import type { WebviewApi } from 'vscode-webview';
 class VSCodeAPIWrapper {
     private readonly vsCodeApi: WebviewApi<unknown> | undefined;
 
+    /** Acquire the webview API once, falling back to browser storage for previews. */
     constructor () {
         // Check if the acquireVsCodeApi function exists in the current development
         // context (i.e. VS Code development window or web browser)
@@ -28,7 +31,7 @@ class VSCodeAPIWrapper {
      *
      * @param message Abitrary data (must be JSON serializable) to send to the extension context.
      */
-    public postMessage (message: unknown) {
+    public postMessage (message: SidebarRequest) {
         if (this.vsCodeApi) {
             this.vsCodeApi.postMessage(message);
         } else {

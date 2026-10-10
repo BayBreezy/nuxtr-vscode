@@ -4,7 +4,7 @@ import { activateSnippets } from './snippets';
 import { selectProject, withProject } from './services/project';
 import nuxtrCommands from './commands'
 import { ModulesView } from './sideBar'
-import { logger, updateDependencies } from './utils';
+import { logger, projectRootDirectory, updateDependencies } from './utils';
 import codelens from './codelens'
 import { activateStatusBarIcons, statusBars } from './statusBar'
 import { activateIntellisense } from './intellisense'
@@ -71,21 +71,23 @@ export const publicCommands = [
 /** Activate project services once; all registrations are owned by the extension context. */
 export async function activateExtension (context: ExtensionContext) {
     // initial output channel logger
+    context.subscriptions.push(logger);
     logger.log('Nuxtr is active')
     await activateSnippets(context);
 
     // global state command
     context.subscriptions.push(commands.registerCommand('nuxtr.globalState', ({ update, name, value }) => {
         if (update) {
-            context.globalState.update(name, value)
-            return
+            return context.globalState.update(name === 'outdatedDependencies' ? name + ':' + projectRootDirectory() : name, value)
+
         } else {
-            return context.globalState.get(name)
+            return context.globalState.get(name === 'outdatedDependencies' ? name + ':' + projectRootDirectory() : name)
         }
     }))
 
 
     const sidebarProvider = new ModulesView(context.extensionUri)
+    context.subscriptions.push(sidebarProvider);
 
 
     activateConfigWatchers(context);
@@ -100,7 +102,7 @@ export async function activateExtension (context: ExtensionContext) {
     activateIntellisense(context)
 
     // activate codelens
-    codelens.activateCodelenses()
+    codelens.activateCodelenses(context)
 
     for (const { command, function: commandFunction } of extensionCommands) {
         context.subscriptions.push(commands.registerCommand(command, async (...args: any[]) => {
@@ -126,37 +128,20 @@ export async function activateExtension (context: ExtensionContext) {
         })
     )
 
-    // nuxtr.sidebarModulesView
-    context.subscriptions.push(
-        commands.registerCommand('nuxtr.sidebarModulesView', async () => {
-            await commands.executeCommand('workbench.view.extension.sidebar-view').then(() => {
-                setTimeout(() => {
-                    sidebarProvider.postMessage({ command: 'modules' })
-                    sidebarProvider.updateModules()
-                }, 50)
-            })
-        })
-    )
-
-    // nuxtr.addModule command for codelens action
-    context.subscriptions.push(
-        commands.registerCommand('nuxtr.createModuleAction', async () => {
-            await commands.executeCommand('nuxtr.sidebarModulesView').then(() => {
-                setTimeout(() => {
-                    sidebarProvider.postMessage({ command: 'addModule' })
-                }, 50)
-            })
-        })
-    )
-
-    // nuxtr.createLayer command for codelens action
-    context.subscriptions.push(
-        commands.registerCommand('nuxtr.createLayer', async () => {
-            await commands.executeCommand('nuxtr.sidebarModulesView').then(() => {
-                setTimeout(() => {
-                    sidebarProvider.postMessage({ command: 'addLayer' })
-                }, 50)
-            })
-        })
-    )
+    // Navigation state is retained until the webview's ready handshake arrives.
+    context.subscriptions.push(commands.registerCommand('nuxtr.sidebarModulesView', async () => {
+        await commands.executeCommand('workbench.view.extension.sidebar-view');
+        sidebarProvider.postMessage({ command: 'modules' });
+        await sidebarProvider.updateModules();
+    }));
+    for (const [command, action] of [['nuxtr.createModuleAction', 'addModule'], ['nuxtr.createLayer', 'addLayer']] as const) {
+        context.subscriptions.push(commands.registerCommand(command, async (resource?: Uri) => {
+            const project = await selectProject(resource);
+            if (!project) { return; }
+            await withProject(project, async () => {
+                await commands.executeCommand('nuxtr.sidebarModulesView');
+                sidebarProvider.postMessage({ command: action });
+            });
+        }));
+    }
 }

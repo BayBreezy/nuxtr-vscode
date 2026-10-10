@@ -7,16 +7,6 @@ import { PugConfigurationSteps } from '../commands/templates';
 import { TSConfigNuxt } from '../types';
 import { createConfigWatcher, getProjectDependencies, nuxtrConfiguration, projectRootDirectory } from '../utils';
 
-/** Offer a reload for settings whose providers are still configured only at startup. */
-const reloatWindowProps = () => {
-    window.showInformationMessage('Configuration has been modified.', 'Reload Window').then((answer) => {
-        if (answer === 'Reload Window') {
-            commands.executeCommand('workbench.action.reloadWindow');
-            return;
-        }
-    });
-}
-
 /** Register project configuration listeners and attach every listener to the extension lifetime. */
 export function activateConfigWatchers (context: ExtensionContext) {
 
@@ -39,12 +29,13 @@ export function activateConfigWatchers (context: ExtensionContext) {
             }
 
             const path = `${projectRootDirectory()}/tsconfig.json`;
-            const tsconfig: TSConfigNuxt = await readTSConfig(path);
+
 
             if (!existsSync(path)) {
                 return;
             }
 
+            const tsconfig: TSConfigNuxt = await readTSConfig(path);
             const vueCompilerPlugins: string[] = tsconfig.vueCompilerOptions?.plugins ?? [];
             if (!vueCompilerPlugins.includes('@vue/language-plugin-pug')) {
                 options.push(PugConfigurationSteps.addPluginToTSConfig)
@@ -64,9 +55,5 @@ export function activateConfigWatchers (context: ExtensionContext) {
         }
     });
 
-    const intellisenseConfigWatcher = createConfigWatcher('nuxtr.intellisense', (): Promise<void> => {
-        reloatWindowProps();
-        return Promise.resolve();
-    })
-    context.subscriptions.push(templatesConfigWatcher, intellisenseConfigWatcher);
+    context.subscriptions.push(templatesConfigWatcher);
 }
