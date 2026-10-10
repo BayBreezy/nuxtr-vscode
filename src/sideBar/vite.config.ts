@@ -6,7 +6,8 @@ import vue from '@vitejs/plugin-vue';
 export default defineConfig({
     plugins: [vue(), tailwindcss()],
     build: {
-        outDir: 'build',
+        outDir: '../../out/sidebar',
+        emptyOutDir: true,
         cssMinify: 'lightningcss',
         minify: 'terser',
         rolldownOptions: {

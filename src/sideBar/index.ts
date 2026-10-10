@@ -179,9 +179,9 @@ export class ModulesView implements vscode.WebviewViewProvider {
     /** Render the sidebar shell with local JS/CSS asset URIs. */
     private _getHtmlForWebview (webview: vscode.Webview) {
         const nonce = getNonce();
-        const stylesUri = getUri(webview, this._extensionUri, ['src', 'sideBar', 'build', 'assets', 'index.css'])
+        const stylesUri = getUri(webview, this._extensionUri, ['out', 'sidebar', 'assets', 'index.css'])
         // The JS file from the Vue build output
-        const scriptUri = getUri(webview, this._extensionUri, ['src', 'sideBar', 'build', 'assets', 'index.js'])
+        const scriptUri = getUri(webview, this._extensionUri, ['out', 'sidebar', 'assets', 'index.js'])
 
         return /*html*/ `
       <!DOCTYPE html>

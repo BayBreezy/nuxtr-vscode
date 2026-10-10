@@ -6,7 +6,6 @@
 
 .vscode-test/**
 src/**
-!src/sideBar/build/**
 vsc-extension-quickstart.md
 **/tsconfig.json
 **/eslint.config.mjs

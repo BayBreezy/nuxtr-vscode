@@ -13,7 +13,7 @@ exports.run = async function run () {
     assert(commands.includes('nuxtr.createProject'), 'Project creation must be available');
     if (process.env.NUXTR_SCENARIO.startsWith('nuxt') || process.env.NUXTR_SCENARIO === 'nested') {
         assert(commands.includes('nuxtr.createComponent'));
-        const build = existsSync(join(extension.extensionPath, 'out/sidebar')) ? 'out/sidebar' : 'src/sideBar/build';
+        const build = 'out/sidebar';
         assert(existsSync(join(extension.extensionPath, build, 'assets/index.js')));
         assert(existsSync(join(extension.extensionPath, build, 'assets/index.css')));
         await vscode.commands.executeCommand('workbench.view.extension.sidebar-view');
