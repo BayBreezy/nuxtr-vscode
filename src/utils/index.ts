@@ -52,6 +52,6 @@ export { createConfigWatcher } from './watchers'
 
 export { isDirectory, languageSelector, openFolder, patternSelector, quickOpenButtons } from './vscode'
 
-export { generatePiniaTemplates, generateVueFileBasicTemplate, generateVueFileTemplate } from './files'
+export { generateScaffoldTemplate, scaffoldExtension, generatePiniaTemplates, generateVueFileBasicTemplate, generateVueFileTemplate } from './files'
 
 export { projectDirectories, projectDirectory } from './nuxt';

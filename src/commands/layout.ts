@@ -17,7 +17,7 @@ const createLayout = () => {
 
             await createDir('layouts')
 
-            const filePath = `${await projectSrcDirectory()}/layouts/${normalizeFileExtension(name, '.vue')}.vue`
+            const filePath = `${projectDirectory('layouts')}/${normalizeFileExtension(name, '.vue')}.vue`
 
             return createFile({
                 fileName: `${name}.vue`,

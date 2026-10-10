@@ -56,7 +56,10 @@
       "files.associations": {
         "*.page-template": "vue",
         "*.layout-template": "vue",
-        "*.vue": "vue"
+        "*.vue": "vue",
+        "*.component-template": "vue",
+        "*.composable-template": "typescript",
+        "*.api-template": "typescript"
       }
     },
     "grammars": [
@@ -466,6 +469,35 @@
                 "repoURL"
               ]
             }
+          },
+          "nuxtr.fileTemplates.components.defaultTemplate": {
+            "type": "string",
+            "default": "",
+            "description": "Optional components template filename in the selected project\u2019s .vscode directory."
+          },
+          "nuxtr.fileTemplates.composables.defaultTemplate": {
+            "type": "string",
+            "default": "",
+            "description": "Optional composables template filename in the selected project\u2019s .vscode directory."
+          },
+          "nuxtr.fileTemplates.apis.defaultTemplate": {
+            "type": "string",
+            "default": "",
+            "description": "Optional apis template filename in the selected project\u2019s .vscode directory."
+          },
+          "nuxtr.scaffolding.defaultLanguage": {
+            "type": "string",
+            "enum": [
+              "ts",
+              "js"
+            ],
+            "default": "ts",
+            "description": "File language for Nuxt and Nitro code scaffolds. Vue script language uses its existing setting."
+          },
+          "nuxtr.scaffolding.composableUsePrefix": {
+            "type": "boolean",
+            "default": false,
+            "description": "Prefix generated composable filenames with use (for example useCounter.ts)."
           }
         }
       },

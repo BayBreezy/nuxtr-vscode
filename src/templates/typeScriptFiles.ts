@@ -1,5 +1,5 @@
 /** Starter code for Nuxt/Nitro application, route, middleware, plugin and composable files. */
-import { normalizedIdentifier as normalizeName,  } from '../core/generated';
+import { composableName } from '../core/templates';
 
 const nitroDefaultTemplate = `/** Handle this server route and provide its response. */
 export default defineEventHandler(() => {
@@ -14,7 +14,7 @@ const nuxtMiddlewareTemplate = `export default defineNuxtRouteMiddleware((to, fr
 
 /** Generate a named reactive composable with a use-prefixed exported function. */
 const composableTemplate = (name: string) => `/** Reactive state shared by callers of this composable. */
-export const use${normalizeName(name)} = () => {
+export const use${composableName(name)} = () => {
   return ref()
 }
 `

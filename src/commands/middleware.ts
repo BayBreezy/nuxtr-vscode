@@ -1,7 +1,9 @@
 /** Prompt for and scaffold middleware files in the selected project’s resolved directories. */
+import { containsPath } from '../core/project';
+import { scaffoldExtension } from '../utils/files';
 import { projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode'
-import { nitroDefaultTemplate, nuxtMiddlewareTemplate } from '../templates'
+import { nuxtMiddlewareTemplate, serverMiddlewareTemplate } from '../templates'
 import { createDir, createFile, createSubFolders, hasServerDir, normalizeFileExtension, projectSrcDirectory, showSubFolderQuickPick } from '../utils'
 
 /** Prompt for a name and create the selected middleware scaffold. */
@@ -44,11 +46,11 @@ const directCreateMiddleware = async (path: string) => {
         .then((name) => {
             if (!name) { return }
 
-            const filePath = `${path}/${normalizeFileExtension(name, '.ts')}.ts`
+            const filePath = `${path}/${normalizeFileExtension(name, scaffoldExtension())}${scaffoldExtension()}`
 
             return createFile({
-                fileName: `${name}.ts`,
-                content: filePath.includes(`${serverDir}`) ? nitroDefaultTemplate : nuxtMiddlewareTemplate,
+                fileName: `${name}${scaffoldExtension()}`,
+                content: containsPath(projectDirectory('server'), filePath) ? serverMiddlewareTemplate : nuxtMiddlewareTemplate,
                 fullPath: filePath,
             })
         })
