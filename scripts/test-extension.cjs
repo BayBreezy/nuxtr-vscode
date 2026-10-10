@@ -8,7 +8,7 @@ const { join, resolve } = require('node:path');
 async function main () {
     const root = resolve(__dirname, '..');
     const temporary = mkdtempSync(join(tmpdir(), 'nuxtr-integration-'));
-    const cases = process.argv.slice(2).length ? process.argv.slice(2) : ['nuxt'];
+    const cases = process.argv.slice(2).length > 0 ? process.argv.slice(2) : ['nuxt'];
     const installed = '/Applications/Visual Studio Code.app/Contents/MacOS/Code';
     const executable = process.env.VSCODE_EXECUTABLE_PATH || (existsSync(installed) ? installed : undefined);
     delete process.env.ELECTRON_RUN_AS_NODE;
@@ -18,7 +18,7 @@ async function main () {
         if (scenario === 'nuxt') {
             writeFileSync(join(folder, 'package.json'), JSON.stringify({ name: 'smoke', private: true, dependencies: { nuxt: '^3.13.2' } }));
             writeFileSync(join(folder, 'nuxt.config.ts'), 'export default defineNuxtConfig({})\n');
-            writeFileSync(join(folder, 'pnpm-lock.yaml'), "lockfileVersion: '9.0'\n");
+            writeFileSync(join(folder, 'pnpm-lock.yaml'), 'lockfileVersion: \'9.0\'\n');
         }
         await runTests({
             extensionDevelopmentPath: root,

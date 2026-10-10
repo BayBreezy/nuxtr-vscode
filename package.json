@@ -1078,7 +1078,8 @@
     "typecheck": "tsc --noEmit",
     "knip": "knip",
     "typecheck:ui": "pnpm --filter ui typecheck",
-    "test:extension": "node scripts/test-extension.cjs"
+    "test:extension": "node scripts/test-extension.cjs",
+    "validate": "node scripts/validate.cjs"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
