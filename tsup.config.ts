@@ -8,7 +8,7 @@ export default defineConfig({
     shims: false,
     dts: false,
     splitting: false,
-    clean: true,
+    clean: false,
     minify: 'terser',
     platform: 'node',
     sourcemap: false,

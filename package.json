@@ -1027,9 +1027,9 @@
     "http"
   ],
   "scripts": {
-    "build": "tsup && cd src/sideBar && pnpm build",
+    "build": "node scripts/build.mjs",
     "vscode:prepublish": "pnpm build",
-    "dev": "pnpm build -- --watch",
+    "dev": "node scripts/dev.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "package": "vsce package --no-dependencies",

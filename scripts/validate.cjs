@@ -48,7 +48,7 @@ function verifyPackage (file) {
     for (const file of ['nuxt/boilerplates', 'nuxt/components', 'nuxt/composables', 'nuxt/utils', 'nitro/boilerplates', 'nitro/utils']) {
         assert(entries.has('extension/snippets/' + file + '.json'), 'Missing snippet resource: ' + file);
     }
-    const sidebar = entries.has('extension/out/sidebar/assets/index.js') ? 'out/sidebar' : 'src/sideBar/build';
+    const sidebar = 'out/sidebar';
     assert(entries.has('extension/' + sidebar + '/assets/index.js'));
     assert(entries.has('extension/' + sidebar + '/assets/index.css'));
     console.log('PASS: VSIX manifest, sidebar assets and exclusions');

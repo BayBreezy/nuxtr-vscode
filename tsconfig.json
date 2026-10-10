@@ -25,6 +25,7 @@
     "rolldown.config.js",
     "knip.ts",
     "tests",
-    "vitest.config.ts"
+    "vitest.config.ts",
+    "vitest.config.mts"
   ]
 }
