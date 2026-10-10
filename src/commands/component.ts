@@ -1,7 +1,7 @@
 /** Prompt for and scaffold component files in the selected project’s resolved directories. */
 import { projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode';
-import { createDir, createFile, createSubFolders, generateVueFileBasicTemplate, projectSrcDirectory, showSubFolderQuickPick, } from '../utils';
+import { createDir, createFile, createSubFolders, generateVueFileTemplate, normalizeFileExtension, projectSrcDirectory, showSubFolderQuickPick, } from '../utils';
 
 /** Prompt for a name and create the selected component scaffold. */
 const createComponent = () => {
@@ -23,7 +23,7 @@ const createComponent = () => {
                 name,
                 subFolders,
                 commandType: 'components',
-                content: generateVueFileBasicTemplate('component'),
+                content: generateVueFileTemplate('component'),
             })
         })
 }
@@ -38,11 +38,11 @@ const directCreateComponent = (path: string) => {
         .then((name) => {
             if (!name) { return }
 
-            const filePath = `${path}/${name}.vue`
+            const filePath = `${path}/${normalizeFileExtension(name, '.vue')}.vue`
 
             return createFile({
                 fileName: `${name}.vue`,
-                content: generateVueFileBasicTemplate('component'),
+                content: generateVueFileTemplate('component'),
                 fullPath: filePath,
             })
         })

@@ -1,11 +1,8 @@
 /** Prompt for and scaffold composable files in the selected project’s resolved directories. */
+import { scaffoldFileName } from '../core/templates';
 import { projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode'
-import { composableTemplate } from '../templates'
-import { createDir, createFile, createSubFolders, normalizeFileExtension, projectSrcDirectory, showSubFolderQuickPick } from '../utils'
-
-/** Remove an existing use prefix before generating the exported composable name. */
-const neglectUsePrefix = (name: string) => name.replace(/^use/i, '')
+import { createDir, createFile, createSubFolders, generateScaffoldTemplate, nuxtrConfiguration, showSubFolderQuickPick } from '../utils'
 
 /** Prompt for a name and create the selected composable scaffold. */
 const createComposable = () => {
@@ -25,10 +22,10 @@ const createComposable = () => {
             const subFolders = await createSubFolders(composablesDir, 'composables')
 
             return showSubFolderQuickPick({
-                name,
+                name: scaffoldFileName(name, 'composable', nuxtrConfiguration().scaffolding.defaultLanguage, nuxtrConfiguration().scaffolding.composableUsePrefix),
                 subFolders,
                 commandType: 'composables',
-                content: composableTemplate(neglectUsePrefix(name)),
+                content: generateScaffoldTemplate('composable', name),
             })
 
         })
@@ -44,11 +41,11 @@ const directCreateComposable = (path: string) => {
         .then((name) => {
             if (!name) { return }
 
-            const filePath = `${path}/${normalizeFileExtension(name, '.ts')}.ts`
+            const filePath = `${path}/${scaffoldFileName(name, 'composable', nuxtrConfiguration().scaffolding.defaultLanguage, nuxtrConfiguration().scaffolding.composableUsePrefix)}`
 
             return createFile({
                 fileName: `${name}.ts`,
-                content: composableTemplate(neglectUsePrefix(name)),
+                content: generateScaffoldTemplate('composable', name),
                 fullPath: filePath,
             })
         })

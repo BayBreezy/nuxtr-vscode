@@ -9,6 +9,7 @@ const { configureTailwindSource, tailwindRecipe } = await jiti.import('../src/co
 const { formatGeneratedContent, piniaOptionsTemplate, serverMiddlewareTemplate } = await jiti.import('../src/core/generated.ts');
 const { piniaSetupContent } = await jiti.import('../src/templates/stores.ts');
 const { nitroDefaultTemplate, composableTemplate } = await jiti.import('../src/templates/typeScriptFiles.ts');
+const { scaffoldFileName } = await jiti.import('../src/core/templates.ts');
 const { executeCommand, requireSuccess } = await jiti.import('../src/core/process.ts');
 
 /** Run a fixture check with complete diagnostics and a bounded installation/build timeout. */
@@ -59,7 +60,9 @@ async function fixture (major, recipe) {
         [join(app, 'stores/setup.ts'), piniaSetupContent('smokeSetup')],
         [join(app, 'composables/useSmoke.ts'), composableTemplate('smoke')],
         [join(root, 'server/api/hello.ts'), nitroDefaultTemplate],
-        [join(root, 'server/middleware/context.ts'), serverMiddlewareTemplate]
+        [join(root, 'server/middleware/context.ts'), serverMiddlewareTemplate],
+        [join(app, 'composables', scaffoldFileName('useJavaScript', 'composable', 'js', true)), composableTemplate('useJavaScript')],
+        [join(root, 'server/api', scaffoldFileName('javascript.get.ts', 'api', 'js')), nitroDefaultTemplate]
     ]) { await writeFile(path, formatGeneratedContent(content, major === 3, 4, '\n')); }
     await check(root, ['install']);
     await check(root, ['install', '--frozen-lockfile']);

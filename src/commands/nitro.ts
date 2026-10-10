@@ -2,7 +2,7 @@
 import { projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode';
 import { nitroDefaultTemplate, nitroPluginTemplate, nitroUtilTemplate, serverMiddlewareTemplate } from '../templates';
-import { createDir, createFile, createSubFolders, hasServerDir, normalizeFileExtension, projectSrcDirectory, showSubFolderQuickPick } from '../utils';
+import { createDir, createFile, createSubFolders, generateScaffoldTemplate, hasServerDir, normalizeFileExtension, projectSrcDirectory, scaffoldExtension, showSubFolderQuickPick } from '../utils';
 
 /** Prompt for a name and create the selected nitro scaffold. */
 const createNitroAPI = () => {
@@ -26,7 +26,7 @@ const createNitroAPI = () => {
                 name,
                 subFolders,
                 commandType: 'api',
-                content: nitroDefaultTemplate
+                content: generateScaffoldTemplate('api', name)
             });
         });
 };
@@ -151,10 +151,10 @@ const directCreateNitroAPI = (path: string) => {
             if (!name) { return }
 
 
-            const filePath = `${path}/${normalizeFileExtension(name, '.ts')}.ts`
+            const filePath = `${path}/${normalizeFileExtension(name, scaffoldExtension())}${scaffoldExtension()}`
             return createFile({
-                fileName: `${name}.ts`,
-                content: nitroDefaultTemplate,
+                fileName: `${name}${scaffoldExtension()}`,
+                content: generateScaffoldTemplate('api', name),
                 fullPath: filePath,
             })
         })
@@ -171,10 +171,10 @@ const directCreateNitroRoute = (path: string) => {
             if (!name) { return }
 
 
-            const filePath = `${path}/${normalizeFileExtension(name, '.ts')}.ts`
+            const filePath = `${path}/${normalizeFileExtension(name, scaffoldExtension())}${scaffoldExtension()}`
 
             return createFile({
-                fileName: `${name}.ts`,
+                fileName: `${name}${scaffoldExtension()}`,
                 content: nitroDefaultTemplate,
                 fullPath: filePath,
             })

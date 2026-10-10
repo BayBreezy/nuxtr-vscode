@@ -101,7 +101,7 @@ export class ModulesView implements vscode.WebviewViewProvider {
         // regex find list of file templates inside .vscode folder
         const fileTemplates = existsSync(`${projectRootDirectory()}/.vscode`)
             ? readdirSync(`${projectRootDirectory()}/.vscode`)
-                .filter((file) => file.match(/.*\.(page-template|layout-template)/))
+                .filter((file) => file.match(/.*\.(page-template|layout-template|component-template|composable-template|api-template)/))
             : []
 
         if (request !== this.request) { return; }

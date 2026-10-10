@@ -14,6 +14,8 @@ export interface ConfigurationProperty {
 }
 
 export interface NuxtrConfiguration {
+    scaffolding: { defaultLanguage: 'ts' | 'js'; composableUsePrefix: boolean };
+    fileTemplates: { components: { defaultTemplate: string }; composables: { defaultTemplate: string }; apis: { defaultTemplate: string } };
     openItemsAfterCreation: boolean;
     defaultPackageManager: 'null' | 'Yarn' | 'NPM' | 'pnpm' | 'Bun';
     monorepoMode: {

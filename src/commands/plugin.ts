@@ -1,4 +1,6 @@
 /** Prompt for and scaffold plugin files in the selected project’s resolved directories. */
+import { containsPath } from '../core/project';
+import { scaffoldExtension } from '../utils/files';
 import { projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode'
 import { nitroPluginTemplate, nuxtPluginTemplate } from '../templates'
@@ -43,12 +45,12 @@ const directCreatePlugin = async (path: string) => {
         .then((name) => {
             if (!name) { return }
 
-            const filePath = `${path}/${normalizeFileExtension(name, '.ts')}.ts`
+            const filePath = `${path}/${normalizeFileExtension(name, scaffoldExtension())}${scaffoldExtension()}`
 
 
             return createFile({
-                fileName: `${name}.ts`,
-                content: filePath.includes(`${serverDir}`) ? nitroPluginTemplate : nuxtPluginTemplate,
+                fileName: `${name}${scaffoldExtension()}`,
+                content: containsPath(projectDirectory('server'), filePath) ? nitroPluginTemplate : nuxtPluginTemplate,
                 fullPath: filePath,
             })
         })

@@ -1,4 +1,6 @@
 /** Prompt for and scaffold store files in the selected project’s resolved directories. */
+import { containsPath } from '../core/project';
+import { scaffoldExtension } from '../utils/files';
 import { projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode'
 import {
@@ -20,11 +22,11 @@ import { vuexContent } from '../templates'
 async function detectPiniaModule () {
     const moduleName = '@pinia/nuxt'
     const isConfigured = isModuleConfigured(moduleName)
-    const installationCommand = await getInstallationCommand(moduleName, true)
     const isInstalled = await isDependencyInstalled(moduleName)
 
 
     if (!isInstalled ) {
+        const installationCommand = await getInstallationCommand(moduleName, true);
         await runCommand({
             command: installationCommand,
             message: 'Installing @pinia/nuxt module',
@@ -50,8 +52,8 @@ const createStore = () => {
         .then(async (name: any) => {
             if (!name) { return }
 
-            const filePath = `${projectDirectory(isNuxtTwo() ? 'store' : 'stores')}/${name}.${isNuxtTwo() ? 'js' : 'ts'}`
-            await (isNuxtTwo() ? createFile({
+            const filePath = `${projectDirectory(isNuxtTwo() ? 'store' : 'stores')}/${normalizeFileExtension(name, isNuxtTwo() ? '.js' : scaffoldExtension())}${isNuxtTwo() ? '.js' : scaffoldExtension()}`
+            const created = await (isNuxtTwo() ? createFile({
                 fileName: name,
                 content: vuexContent,
                 fullPath: filePath,
@@ -61,7 +63,8 @@ const createStore = () => {
                 fullPath: filePath,
             }));
 
-            await detectPiniaModule()
+            if (!created) { return; }
+            if (!isNuxtTwo()) { await detectPiniaModule(); }
         })
 }
 
@@ -75,9 +78,9 @@ const directCreateStore = (path: string) => {
         .then(async (name) => {
             if (!name) { return }
 
-            const filePath = `${path}/${normalizeFileExtension(name, isNuxtTwo() ? '.js' : '.ts' )}.${isNuxtTwo() ? 'js' : 'ts'}`
+            const filePath = `${path}/${normalizeFileExtension(name, isNuxtTwo() ? '.js' : scaffoldExtension())}${isNuxtTwo() ? '.js' : scaffoldExtension()}`
 
-            await (isNuxtTwo() ? createFile({
+            const created = await (isNuxtTwo() ? createFile({
                 fileName: name,
                 content: vuexContent,
                 fullPath: filePath,
@@ -87,7 +90,8 @@ const directCreateStore = (path: string) => {
                 fullPath: filePath,
             }));
 
-            await detectPiniaModule()
+            if (!created) { return; }
+            if (!isNuxtTwo()) { await detectPiniaModule(); }
         })
 }
 
