@@ -204,8 +204,9 @@ export class ModulesView implements vscode.WebviewViewProvider {
         const name = canonicalPackageName(module);
         const metadata = this.catalogue.modules.find(item => item.npm === name);
         if (metadata && !moduleCompatible(metadata, getNuxtVersion())) {
-            this.postMessage({ command: 'moduleInstalled', installed: false, configured: false, cmd: name });
-            vscode.window.showErrorMessage('This module’s compatibility range does not include the selected Nuxt version. Choose a compatible module or update the project.');
+            const error = 'This module’s compatibility range does not include the selected Nuxt version. Choose a compatible module or update the project.';
+            this.postMessage({ command: 'moduleInstalled', installed: false, configured: false, cmd: name, error });
+            vscode.window.showErrorMessage(error);
             return;
         }
         module = metadata || module;
@@ -216,9 +217,10 @@ export class ModulesView implements vscode.WebviewViewProvider {
             },
             () => updateNuxtConfig('add-module', name)
         );
-        this.postMessage({ command: 'moduleInstalled', installed: result.installed, configured: result.configured, cmd: name });
+        this.postMessage({ command: 'moduleInstalled', installed: result.installed, configured: result.configured, cmd: name, error: result.error ? String(result.error) : undefined });
         if (!result.installed) { return; }
-        await this.updateModules();
+        try { await this.updateModules(); }
+        catch (error) { vscode.window.showErrorMessage(`${name} is installed, but refreshing the dependency list failed: ${String(error)}.`); }
         if (result.configured) { vscode.window.showInformationMessage(`${name} installed and configured.`); }
         else { vscode.window.showErrorMessage(`${name} is installed, but its Nuxt config edit failed: ${String(result.error)}. Add it manually to modules/extends.`); }
     }
@@ -326,7 +328,12 @@ export class ModulesView implements vscode.WebviewViewProvider {
                         case 'createEmptyFileTemplate': { await vscode.commands.executeCommand('nuxtr.createEmptyFileTemplate'); break; }
                     }
                 });
-            } catch (error) { vscode.window.showErrorMessage(String(error)); }
+            } catch (error) {
+                if (message.command === 'installModule') {
+                    this.postMessage({ command: 'moduleInstalled', installed: false, configured: false, cmd: message.module.npm, error: String(error) });
+                }
+                vscode.window.showErrorMessage(String(error));
+            }
         }));
     }
 }
