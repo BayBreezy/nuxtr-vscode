@@ -1,7 +1,10 @@
+/** Prompt for and scaffold util files in the selected project’s resolved directories. */
+import { projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode'
 import { nitroUtilTemplate, nuxtUtilTemplate } from '../templates'
 import { createDir, createFile, createSubFolders, hasServerDir, projectSrcDirectory, showSubFolderQuickPick } from '../utils'
 
+/** Prompt for a name and create the selected util scaffold. */
 const createUtil = () => {
     window
         .showInputBox({
@@ -11,7 +14,7 @@ const createUtil = () => {
         .then(async (name) => {
             if (!name) { return }
 
-            const utilsDir = `${await projectSrcDirectory()}/utils`
+            const utilsDir = projectDirectory('utils')
 
             await createDir('utils')
 
@@ -28,6 +31,7 @@ const createUtil = () => {
 }
 
 
+/** Create a file in the Explorer folder supplied by the command. */
 const directCreateUtil = async (path: string) => {
     const serverDir = await hasServerDir()
 

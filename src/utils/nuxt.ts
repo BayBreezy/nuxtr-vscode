@@ -1,4 +1,7 @@
 /** Inspect and edit Nuxt project configuration without evaluating application code during activation. */
+import { relative } from 'node:path';
+import semver from 'semver';
+import { DirectoryKind, readStaticConfig, resolveDirectories } from '../core/directories';
 import { configAt } from '../core/project';
 import { pathExistsSync } from 'fs-extra';
 import { parseModule } from 'magicast';
@@ -117,40 +120,14 @@ export const getNuxtVersion = (): string | undefined => {
 };
 
 /** Read a literal application source-directory override. */
-export const hasSrcDir = async (): Promise<string> => {
-    const isNuxt = await isNuxtProject();
-    if (!isNuxt) {
-        return '/'
-    }
-    const nuxtConfigPath = findNuxtConfig();
-    const nuxtConfig = readFileSync(`${nuxtConfigPath}`, 'utf8');
-
-    const mod = parseModule(nuxtConfig, { sourceFileName: nuxtConfigPath });
-    const config =
-        mod.exports.default.$type === 'function-call'
-            ? mod.exports.default.$args[0]
-            : mod.exports.default;
-
-    return config.srcDir ? `/${config.srcDir}` : '/';
+export const hasSrcDir = (): string => {
+    return '/' + relative(projectRootDirectory(), projectDirectories().app);
 };
 
 
 /** Read a literal server-directory override. */
-export const hasServerDir = async (): Promise<string> => {
-    const isNuxt = await isNuxtProject();
-    if (!isNuxt) {
-        return 'server'
-    }
-    const nuxtConfigPath = findNuxtConfig();
-    const nuxtConfig = readFileSync(`${nuxtConfigPath}`, 'utf8');
-
-    const mod = parseModule(nuxtConfig, { sourceFileName: nuxtConfigPath });
-    const config =
-        mod.exports.default.$type === 'function-call'
-            ? mod.exports.default.$args[0]
-            : mod.exports.default;
-
-    return config.serverDir ? `${config.serverDir}` : 'server';
+export const hasServerDir = (): string => {
+    return relative(projectDirectories().app, projectDirectories().server);
 };
 
 /** Determine whether the declared project version is Nuxt 2. */
@@ -206,3 +183,16 @@ export const updateNuxtConfig = (action: 'inject-eslint-devChcker' | 'add-module
         );
     }
 };
+
+/** Resolve separate application and root-level directories from the current project's static config. */
+export function projectDirectories () {
+    const config = findNuxtConfig();
+    if (!config) { throw new Error('No Nuxt config found. Select a Nuxt project before creating files.'); }
+    const declared = getNuxtVersion();
+    const version = declared && semver.validRange(declared) ? semver.minVersion(declared) : undefined;
+    if (!version) { throw new Error('Cannot determine the Nuxt version. Install project dependencies or use an Explorer folder to create files.'); }
+    return resolveDirectories(projectRootDirectory(), readStaticConfig(config), version.major);
+}
+
+/** Resolve a logical Nuxt directory to its absolute filesystem location. */
+export function projectDirectory (kind: DirectoryKind): string { return projectDirectories()[kind]; }

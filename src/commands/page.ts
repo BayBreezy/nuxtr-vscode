@@ -1,7 +1,10 @@
+/** Prompt for and scaffold page files in the selected project’s resolved directories. */
+import { projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode'
 import { createDir, createFile, createSubFolders, normalizeFileExtension, projectSrcDirectory, showSubFolderQuickPick } from '../utils'
 import { generateVueFileTemplate } from '../utils/files'
 
+/** Prompt for a name and create the selected page scaffold. */
 const createPage = () => {
     window
         .showInputBox({
@@ -11,7 +14,7 @@ const createPage = () => {
         .then(async (name) => {
             if (!name) {return}
 
-            const pagesDir = `${await projectSrcDirectory()}/pages`
+            const pagesDir = projectDirectory('pages')
 
             await createDir('pages')
 
@@ -26,6 +29,7 @@ const createPage = () => {
         })
 }
 
+/** Create a file in the Explorer folder supplied by the command. */
 function directCreatePage (path: string) {
     window
         .showInputBox({

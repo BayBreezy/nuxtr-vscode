@@ -1,8 +1,11 @@
+/** Prompt for and scaffold layout files in the selected project’s resolved directories. */
+import { projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode'
 import { createDir, createFile, normalizeFileExtension, projectSrcDirectory } from '../utils'
 import { generateVueFileTemplate } from '../utils/files'
 
 
+/** Prompt for a name and create the selected layout scaffold. */
 const createLayout = () => {
     window
         .showInputBox({
@@ -24,6 +27,7 @@ const createLayout = () => {
         })
 }
 
+/** Create a file in the Explorer folder supplied by the command. */
 const directCreateLayout = (path: string) => {
     window
         .showInputBox({

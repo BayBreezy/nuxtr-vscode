@@ -1,7 +1,10 @@
+/** Prompt for and scaffold middleware files in the selected project’s resolved directories. */
+import { projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode'
 import { nitroDefaultTemplate, nuxtMiddlewareTemplate } from '../templates'
 import { createDir, createFile, createSubFolders, hasServerDir, normalizeFileExtension, projectSrcDirectory, showSubFolderQuickPick } from '../utils'
 
+/** Prompt for a name and create the selected middleware scaffold. */
 const createMiddleware = () => {
     window
         .showInputBox({
@@ -12,7 +15,7 @@ const createMiddleware = () => {
 
             if (!name) { return }
 
-            const middlewareDir = `${await projectSrcDirectory()}/middleware`
+            const middlewareDir = projectDirectory('middleware')
 
             await createDir('middleware')
 
@@ -29,6 +32,7 @@ const createMiddleware = () => {
         })
 }
 
+/** Create a file in the Explorer folder supplied by the command. */
 const directCreateMiddleware = async (path: string) => {
     const serverDir = await hasServerDir()
 

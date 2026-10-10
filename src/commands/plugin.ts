@@ -1,7 +1,10 @@
+/** Prompt for and scaffold plugin files in the selected project’s resolved directories. */
+import { projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode'
 import { nitroPluginTemplate, nuxtPluginTemplate } from '../templates'
 import { createDir, createFile, createSubFolders, hasServerDir, normalizeFileExtension, projectSrcDirectory, showSubFolderQuickPick } from '../utils'
 
+/** Prompt for a name and create the selected plugin scaffold. */
 const createPlugin = () => {
     window
         .showInputBox({
@@ -11,7 +14,7 @@ const createPlugin = () => {
         .then(async (name) => {
             if (!name) { return }
 
-            const pluginsDir = `${await projectSrcDirectory()}/plugins`
+            const pluginsDir = projectDirectory('plugins')
 
             await createDir('plugins')
 
@@ -28,6 +31,7 @@ const createPlugin = () => {
 }
 
 
+/** Create a file in the Explorer folder supplied by the command. */
 const directCreatePlugin = async (path: string) => {
     const serverDir = await hasServerDir()
 

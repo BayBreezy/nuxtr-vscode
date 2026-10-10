@@ -9,6 +9,9 @@ async function main () {
     const root = resolve(__dirname, '..');
     const temporary = mkdtempSync(join(process.platform === 'darwin' ? '/tmp' : tmpdir(), 'nx-'));
     const cases = process.argv.slice(2).length > 0 ? process.argv.slice(2) : ['empty', 'non-nuxt', 'nuxt', 'nuxt4', 'nested'];
+    const vueLanguage = join(temporary, 'vue-language');
+    mkdirSync(vueLanguage);
+    writeFileSync(join(vueLanguage, 'package.json'), JSON.stringify({ name: 'fixture-vue', publisher: 'tests', version: '1.0.0', engines: { vscode: '*' }, contributes: { languages: [{ id: 'vue', extensions: ['.vue'] }] } }));
     const installed = '/Applications/Visual Studio Code.app/Contents/MacOS/Code';
     const executable = process.env.VSCODE_EXECUTABLE_PATH || (existsSync(installed) ? installed : undefined);
     delete process.env.ELECTRON_RUN_AS_NODE;
@@ -21,6 +24,13 @@ async function main () {
             writeFileSync(join(project, 'package.json'), JSON.stringify({ name: 'smoke', private: true, dependencies: { nuxt: scenario === 'nuxt4' ? '^4.6.1' : '^3.21.11' } }));
             writeFileSync(join(project, 'nuxt.config.ts'), 'export default defineNuxtConfig({})\n');
             writeFileSync(join(project, '.nuxtrc'), '\n');
+            if (scenario === 'nuxt4') {
+                mkdirSync(join(project, 'app'), { recursive: true });
+                writeFileSync(join(project, 'app/app.vue'), '<template><NuxtPage /></template>');
+            }
+            mkdirSync(join(project, 'public'), { recursive: true });
+            writeFileSync(join(project, 'public/logo.svg'), '<svg></svg>');
+            writeFileSync(join(project, 'asset-test.vue'), '<template><img src="/"></template>');
             writeFileSync(join(folder, 'pnpm-lock.yaml'), 'lockfileVersion: \'9.0\'\n');
         }
         const binaries = join(folder, 'test-bin');
@@ -33,7 +43,7 @@ async function main () {
             writeFileSync(executable + '.cmd', '@node "%~dp0pm.cjs" %*\r\n');
         }
         await runTests({
-            extensionDevelopmentPath: root,
+            extensionDevelopmentPath: [root, vueLanguage],
             extensionTestsPath: join(root, 'tests/integration/smoke.cjs'),
             vscodeExecutablePath: executable,
             version: process.env.VSCODE_TEST_VERSION || '1.141.0',
