@@ -11,12 +11,16 @@ exports.run = async function run () {
     await extension.activate();
     const commands = await vscode.commands.getCommands();
     assert(commands.includes('nuxtr.createProject'), 'Project creation must be available');
-    if (process.env.NUXTR_SCENARIO === 'nuxt') {
+    if (process.env.NUXTR_SCENARIO.startsWith('nuxt')) {
         assert(commands.includes('nuxtr.createComponent'));
         const build = existsSync(join(extension.extensionPath, 'out/sidebar')) ? 'out/sidebar' : 'src/sideBar/build';
         assert(existsSync(join(extension.extensionPath, build, 'assets/index.js')));
         assert(existsSync(join(extension.extensionPath, build, 'assets/index.css')));
         await vscode.commands.executeCommand('workbench.view.extension.sidebar-view');
+        const document = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, '.nuxtrc'));
+        await vscode.window.showTextDocument(document);
+        const completions = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', document.uri, new vscode.Position(0, 0));
+        assert(completions?.items.some(item => item.label === 'srcDir'), 'Nuxt configuration schema must load in the bundled host');
     }
     assert(!extension.packageJSON.contributes.languages.some(x => x.id === 'Log'));
     console.log('NUXTR_SMOKE_PASS: ' + process.env.NUXTR_SCENARIO);

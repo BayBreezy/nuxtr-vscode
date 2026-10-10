@@ -8,3 +8,4 @@ overrides:
   eslint: ^9.11.0
 minimumReleaseAgeExclude:
   - prettier@3.9.10
+  - '@nuxt/schema@4.6.1'
