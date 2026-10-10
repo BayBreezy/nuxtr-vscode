@@ -1,15 +1,17 @@
+/** Shared extension/sidebar lint policy; style rules preserve existing code conventions. */
 import unjs from 'eslint-config-unjs';
 
 export default unjs({
     rules: {
         '@typescript-eslint/naming-convention': 'off',
         '@typescript-eslint/no-duplicate-enum-values': 'off',
-        '@typescript-eslint/semi': 'off',
+        // CommonJS is required by the extension host and official test runner.
+        '@typescript-eslint/no-require-imports': 'off',
+        'unicorn/prefer-class-fields': 'off',
         'curly': ['error', 'all'],
         'eqeqeq': 'warn',
         'no-throw-literal': 'warn',
         'semi': 'off',
-        '@typescript-eslint/indent': ['error', 4],
         'no-multiple-empty-lines': 'warn',
         'no-empty': 'warn',
         'unicorn/filename-case': 'off',
@@ -39,13 +41,16 @@ export default unjs({
         'space-before-blocks': ['error', 'always'],
         'space-infix-ops': ['error', { int32Hint: false }],
         '@typescript-eslint/no-explicit-any': 'off',
-        '@typescript-eslint/ban-types': 'off',
         '@typescript-eslint/ban-ts-comment': 'off',
         '@typescript-eslint/no-extraneous-class': 'off',
         'comma-dangle': 'off',
     },
     ignores: [
         'out',
+        '.agents/**',
+        '.claude/**',
+        'PLAN.md',
+        'PROGRESS.md',
         'node_modules',
         '*.js',
         'src/sideBar/build'
