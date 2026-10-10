@@ -1,5 +1,7 @@
 /** Inspect and edit Nuxt project configuration without evaluating application code during activation. */
-import { relative } from 'node:path';
+import { ModuleMetadata, canonicalPackageName, configModule, editModuleConfig, hasConfiguredModule } from '../core/modules';
+import { currentProject } from '../services/project';
+import { join, relative } from 'node:path';
 import semver from 'semver';
 import { resolveDependency } from '../core/catalogs';
 import { DirectoryKind, readStaticConfig, resolveDirectories } from '../core/directories';
@@ -17,82 +19,29 @@ export const findNuxtConfig = (): string | undefined => {
     try { return configAt(projectRootDirectory()); } catch { return; }
 };
 
-/** Detect installed Nuxt layers by their configuration file. */
-const isLayer = (module: any) => {
-    const modulePath = `${projectRootDirectory()}/node_modules/${module.npm}`;
-
-    if (existsSync(modulePath)) {
-        const nuxtConfigPath = `${modulePath}/nuxt.config.ts`;
-        const result = pathExistsSync(nuxtConfigPath)
-        return result ? true : false;
-    }
+/** Detect a project/workspace-installed layer from its own Nuxt configuration. */
+const isLayer = (value: string | ModuleMetadata): boolean => {
+    const name = canonicalPackageName(value);
+    return [projectRootDirectory(), currentProject().packageManagerRoot].some(root => Boolean(configAt(join(root, 'node_modules', name))));
 };
 
-
-/** Read whether a package is present in the project’s modules or layers configuration. */
-export const isModuleConfigured = (module: string) => {
-    const nuxtConfigPath = findNuxtConfig();
-    const nuxtConfig = readFileSync(`${nuxtConfigPath}`, 'utf8');
-
-    const mod = parseModule(nuxtConfig, { sourceFileName: nuxtConfigPath });
-
-    const config =
-        mod.exports.default.$type === 'function-call'
-            ? mod.exports.default.$args[0]
-            : mod.exports.default;
-
-    const layer = isLayer(module);
-
-    if (layer) {
-        config.extends ||= [];
-        return config.extends.includes(module);
-    } else {
-        config.modules ||= [];
-        return config.modules.includes(module);
-    }
+/** Read the current configuration path and source, reporting a missing file before an attempted edit. */
+function currentConfig () {
+    const path = findNuxtConfig();
+    if (!path) { throw new Error('No Nuxt configuration found. Select a project first.'); }
+    return { path, source: readFileSync(path, 'utf8') };
 }
 
+/** Check whether a canonical module or tuple is configured without modifying the config. */
+export const isModuleConfigured = (value: string | ModuleMetadata) => {
+    const { source } = currentConfig();
+    return hasConfiguredModule(source, value, isLayer(value));
+};
 
-/** Remove a configured module while preserving the rest of the source file. */
-export const removeNuxtModule = (module: any) => {
-    try {
-        const nuxtConfigPath = findNuxtConfig();
-        const nuxtConfig = readFileSync(`${nuxtConfigPath}`, 'utf8');
-
-        const mod = parseModule(nuxtConfig, { sourceFileName: nuxtConfigPath });
-        const config =
-            mod.exports.default.$type === 'function-call'
-                ? mod.exports.default.$args[0]
-                : mod.exports.default;
-
-        const layer = isLayer(module);
-
-        if (layer) {
-            config.extends ||= [];
-
-            for (let i = 0; i < config.extends.length; i++) {
-                if (config.extends[i] === module) {
-                    config.extends.splice(i, 1);
-                }
-            }
-
-        } else {
-            config.modules ||= [];
-            for (let i = 0; i < config.modules.length; i++) {
-                if (config.modules[i] === module) {
-                    config.modules.splice(i, 1);
-                }
-            }
-        }
-
-
-        const generated = mod.generate().code;
-        writeFileSync(`${nuxtConfigPath}`, `${trimEnd(generated)}\n`, 'utf8');
-    } catch (error) {
-        window.showErrorMessage(
-            `${module} failed to uninstall, please uninstall it manually, ${error}`
-        );
-    }
+/** Remove a package’s config entry after successful uninstallation, propagating edit failure to the caller. */
+export const removeNuxtModule = (value: string | ModuleMetadata) => {
+    const { path, source } = currentConfig();
+    writeFileSync(path, editModuleConfig(source, value, 'remove', isLayer(value)), 'utf8');
 };
 
 /** Check whether the current workspace root contains a Nuxt configuration. */
@@ -140,48 +89,17 @@ export const isNuxtTwo = (): boolean | undefined => {
 };
 
 
-/** Apply a supported configuration edit and report errors to the user. */
-export const updateNuxtConfig = (action: 'inject-eslint-devChcker' | 'add-module', input?: string) => {
-    try {
-        const nuxtConfigPath = findNuxtConfig();
-        const nuxtConfig = readFileSync(`${nuxtConfigPath}`, 'utf8');
-
-        const mod = parseModule(nuxtConfig, { sourceFileName: nuxtConfigPath });
-        const config =
-            mod.exports.default.$type === 'function-call'
-                ? mod.exports.default.$args[0]
-                : mod.exports.default;
-
-        if (action === 'inject-eslint-devChcker') {
-            config.eslint ||= {};
-            config.eslint.checker = true;
-        }
-
-        if (action === 'add-module') {
-            const layer = isLayer(input);
-
-            if (layer) {
-                config.extends ||= [];
-                if (!config.extends.includes(input)) {
-                    config.extends.push(input);
-                }
-            } else {
-                config.modules ||= [];
-                if (!config.modules.includes(input)) {
-                    config.modules.push(input);
-                }
-            }
-        }
-
-
-        const generated = mod.generate().code;
-        writeFileSync(`${nuxtConfigPath}`, `${trimEnd(generated)}\n`, 'utf8');
-
-
-    } catch {
-        window.showErrorMessage(
-            'Failed to update nuxt config.'
-        );
+/** Apply a supported static config edit and propagate failure so installation and edit outcomes remain distinguishable. */
+export const updateNuxtConfig = (action: 'inject-eslint-devChcker' | 'add-module', input?: string | ModuleMetadata) => {
+    const { path, source } = currentConfig();
+    if (action === 'add-module') {
+        if (!input) { throw new Error('A module package name is required.'); }
+        writeFileSync(path, editModuleConfig(source, input, 'add', isLayer(input)), 'utf8');
+    } else {
+        const { module, config } = configModule(source);
+        config.eslint ||= {};
+        config.eslint.checker = true;
+        writeFileSync(path, module.generate().code.trimEnd() + '\n', 'utf8');
     }
 };
 
