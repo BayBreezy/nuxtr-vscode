@@ -1,6 +1,6 @@
 /** Smoke-test the bundled extension and sidebar in a real VS Code extension host. */
 const assert = require('node:assert/strict');
-const { existsSync } = require('node:fs');
+const { existsSync, readFileSync } = require('node:fs');
 const { join } = require('node:path');
 const vscode = require('vscode');
 
@@ -28,6 +28,19 @@ exports.run = async function run () {
         const vue = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(root, 'asset-test.vue'));
         const assets = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', vue.uri, new vscode.Position(0, vue.getText().indexOf('src="/') + 6));
         assert(assets?.items.some(item => item.label === 'logo.svg'), 'Public assets must resolve outside Nuxt 4 appDir');
+        const manifestPath = join(extension.extensionPath, 'package.json');
+        const originalManifest = readFileSync(manifestPath, 'utf8');
+        const blank = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(root, 'blank.vue'));
+        const enabled = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', blank.uri, new vscode.Position(0, 0));
+        assert(enabled.items.some(item => item.label === 'vueBase'));
+        await vscode.workspace.getConfiguration('nuxtr').update('snippets.nuxt', false, vscode.ConfigurationTarget.Workspace);
+        const disabled = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', blank.uri, new vscode.Position(0, 0));
+        assert(!disabled.items.some(item => item.label === 'vueBase'), 'Snippet toggle must apply without reload');
+        await vscode.workspace.getConfiguration('nuxtr').update('snippets.nuxt', true, vscode.ConfigurationTarget.Workspace);
+        const importing = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(root, 'import-test.vue'));
+        const importItems = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', importing.uri, new vscode.Position(1, 12));
+        assert(!importItems.items.some(item => item.label === 'vueBase'));
+        assert.equal(readFileSync(manifestPath, 'utf8'), originalManifest, 'Snippet toggles must never rewrite installed manifests');
     }
     assert(!extension.packageJSON.contributes.languages.some(x => x.id === 'Log'));
     console.log('NUXTR_SMOKE_PASS: ' + process.env.NUXTR_SCENARIO);

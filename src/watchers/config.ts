@@ -4,7 +4,6 @@ import { readTSConfig } from 'pkg-types';
 import { ExtensionContext, commands, window } from 'vscode';
 import nuxtrCommands from '../commands';
 import { PugConfigurationSteps } from '../commands/templates';
-import { toggleSnippets } from '../snippets';
 import { TSConfigNuxt } from '../types';
 import { createConfigWatcher, getProjectDependencies, nuxtrConfiguration, projectRootDirectory } from '../utils';
 
@@ -20,18 +19,6 @@ const reloatWindowProps = () => {
 
 /** Register project configuration listeners and attach every listener to the extension lifetime. */
 export function activateConfigWatchers (context: ExtensionContext) {
-
-    const nuxtSnippetsConfigWatcher =
-      createConfigWatcher('nuxtr.snippets.nuxt', async () => {
-          await toggleSnippets('Nuxt', nuxtrConfiguration().snippets.nuxt)
-          reloatWindowProps();
-      });
-
-    const nitroSnippetsConfigWatcher =
-      createConfigWatcher('nuxtr.snippets.nitro', async () => {
-          await toggleSnippets('Nitro', nuxtrConfiguration().snippets.nitro)
-          reloatWindowProps();
-      })
 
     const templatesConfigWatcher = createConfigWatcher('nuxtr.vueFiles.template.defaultLanguage', async () => {
         const options: string[] = [];
@@ -81,5 +68,5 @@ export function activateConfigWatchers (context: ExtensionContext) {
         reloatWindowProps();
         return Promise.resolve();
     })
-    context.subscriptions.push(nuxtSnippetsConfigWatcher, nitroSnippetsConfigWatcher, templatesConfigWatcher, intellisenseConfigWatcher);
+    context.subscriptions.push(templatesConfigWatcher, intellisenseConfigWatcher);
 }

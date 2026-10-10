@@ -15,7 +15,7 @@ export async function activate (context: ExtensionContext) {
             const { isNuxtTwo } = await import('./utils/nuxt');
             await commands.executeCommand('setContext', 'nuxtr.isNuxtTwo', isNuxtTwo());
             const { activateExtension } = await import('./extension');
-            activateExtension(context);
+            await activateExtension(context);
             servicesActive = true;
         }
     });

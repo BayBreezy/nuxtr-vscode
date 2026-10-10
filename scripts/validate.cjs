@@ -45,6 +45,9 @@ function verifyPackage (file) {
         assert(!/(?:PLAN\.md|PROGRESS\.md|\.tsbuildinfo)$/.test(path), 'Local artifact packaged: ' + path);
         assert(!/^extension\/(?:tests|scripts|\.agents|\.claude)\//.test(path), 'Development files packaged: ' + path);
     }
+    for (const file of ['nuxt/boilerplates', 'nuxt/components', 'nuxt/composables', 'nuxt/utils', 'nitro/boilerplates', 'nitro/utils']) {
+        assert(entries.has('extension/snippets/' + file + '.json'), 'Missing snippet resource: ' + file);
+    }
     const sidebar = entries.has('extension/out/sidebar/assets/index.js') ? 'out/sidebar' : 'src/sideBar/build';
     assert(entries.has('extension/' + sidebar + '/assets/index.js'));
     assert(entries.has('extension/' + sidebar + '/assets/index.css'));

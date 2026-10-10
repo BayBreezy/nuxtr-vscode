@@ -30,6 +30,8 @@ async function main () {
             }
             mkdirSync(join(project, 'public'), { recursive: true });
             writeFileSync(join(project, 'public/logo.svg'), '<svg></svg>');
+            writeFileSync(join(project, 'blank.vue'), '');
+            writeFileSync(join(project, 'import-test.vue'), '<script setup>\nimport { vue');
             writeFileSync(join(project, 'asset-test.vue'), '<template><img src="/"></template>');
             writeFileSync(join(folder, 'pnpm-lock.yaml'), 'lockfileVersion: \'9.0\'\n');
         }
