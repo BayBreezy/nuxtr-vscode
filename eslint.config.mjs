@@ -1,7 +1,9 @@
 /** Shared extension/sidebar lint policy; style rules preserve existing code conventions. */
 import unjs from 'eslint-config-unjs';
+import vue from 'eslint-plugin-vue';
+import tseslint from 'typescript-eslint';
 
-export default unjs({
+const extension = unjs({
     rules: {
         '@typescript-eslint/naming-convention': 'off',
         '@typescript-eslint/no-duplicate-enum-values': 'off',
@@ -56,3 +58,29 @@ export default unjs({
         'src/sideBar/build'
     ]
 });
+
+// Vue owns template parsing; TypeScript parses script blocks. Preserve formatter-owned
+// sidebar formatting while applying Vue error-prevention and TypeScript semantic rules.
+const sidebarFiles = ['src/sideBar/**/*.vue'];
+export default [
+    { languageOptions: { parserOptions: { tsconfigRootDir: import.meta.dirname } } },
+    ...extension.map(config => config.files || config.ignores || config.plugins?.markdown ? config : {
+        ...config, files: ['**/*.{js,ts,tsx,mjs,cjs,mts,cts}']
+    }),
+    ...tseslint.configs.recommended.map(config => ({ ...config, files: sidebarFiles })),
+    ...vue.configs['flat/essential'],
+    {
+        files: sidebarFiles,
+        languageOptions: { parserOptions: { parser: tseslint.parser } },
+        rules: {
+            // Existing internal icon/page names are stable component imports.
+            'vue/multi-word-component-names': ['error', { ignores: [
+                'Home', 'Project', 'Trash', 'Star', 'Template', 'Edit', 'Play', 'Module',
+                'Placeholder', 'Upgrade', 'Filter', 'Downloads', 'NPM', 'Nuxt', 'Chevron',
+                'Vue', 'Snippets', 'Flash', 'Add', 'Modules', 'Dependencies', 'Feedback',
+                'Actions'
+            ] }],
+            '@typescript-eslint/no-explicit-any': 'off'
+        }
+    }
+];
