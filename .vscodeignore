@@ -17,3 +17,5 @@ vsc-extension-quickstart.md
 PLAN.md
 PROGRESS.md
 **/*.tsbuildinfo
+scripts/**
+tests/**

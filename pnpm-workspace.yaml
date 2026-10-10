@@ -3,5 +3,8 @@ packages:
 nodeLinker: hoisted
 allowBuilds:
   esbuild: true
+  '@vscode/vsce-sign': true
 overrides:
   eslint: ^9.11.0
+minimumReleaseAgeExclude:
+  - prettier@3.9.10

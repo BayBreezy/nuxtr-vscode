@@ -1,9 +1,10 @@
+/** Read-only dependency reports; updates and installation require explicit CLI flags. */
 import { defineConfig } from 'taze'
 
 export default defineConfig({
-    force: true,
-    write: true,
-    install: true,
+    force: false,
+    write: false,
+    install: false,
     packageMode: {
         'nuxi-nightly': 'latest'
     },

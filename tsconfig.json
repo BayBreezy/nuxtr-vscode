@@ -23,6 +23,8 @@
     "tsup.config.ts",
     "tsdown.config.ts",
     "rolldown.config.js",
-    "knip.ts"
+    "knip.ts",
+    "tests",
+    "vitest.config.ts"
   ]
 }

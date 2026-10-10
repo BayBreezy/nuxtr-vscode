@@ -6,20 +6,21 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
     "@vscode/webview-ui-toolkit": "^1.4.0",
-    "ofetch": "^1.4.0",
-    "vue": "^3.5.8",
+    "ofetch": "^1.5.1",
+    "vue": "^3.5.43",
     "vue-router": "4.4.5"
   },
   "devDependencies": {
     "@types/vscode-webview": "^1.57.5",
     "@vitejs/plugin-vue": "^5.1.4",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.47",
-    "prettier": "^3.3.3",
+    "autoprefixer": "^10.6.1",
+    "postcss": "^8.5.29",
+    "prettier": "^3.9.10",
     "prettier-plugin-tailwindcss": "^0.6.6",
     "tailwindcss": "^3.4.12",
     "typescript": "^5.6.2",
