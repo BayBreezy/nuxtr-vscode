@@ -1,5 +1,6 @@
 /** Register Nuxt project commands, sidebar, status indicators and owned project watchers. */
 import { ExtensionContext, Uri, commands, window } from 'vscode';
+import { selectProject, withProject } from './services/project';
 import nuxtrCommands from './commands'
 import { ModulesView } from './sideBar'
 import { logger, updateDependencies } from './utils';
@@ -100,7 +101,13 @@ export function activateExtension (context: ExtensionContext) {
     codelens.activateCodelenses()
 
     for (const { command, function: commandFunction } of extensionCommands) {
-        context.subscriptions.push(commands.registerCommand(command, commandFunction));
+        context.subscriptions.push(commands.registerCommand(command, async (...args: any[]) => {
+            try {
+                const project = await selectProject(args.find(arg => arg instanceof Uri));
+                if (!project) { return; }
+                return await withProject(project, () => (commandFunction as (...args: any[]) => any)(...args));
+            } catch (error) { window.showErrorMessage(String(error)); }
+        }));
     }
 
 

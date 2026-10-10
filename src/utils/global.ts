@@ -5,6 +5,7 @@ import type { WorkspaceConfiguration } from 'vscode';
 import { ProgressLocation, ThemeIcon, Uri, Webview, env, window, workspace } from 'vscode';
 import { installDependencies } from '../commands/installDependencies';
 import type { NuxtrConfiguration } from '../types';
+import { currentProject, projectSettingsResource } from '../services/project';
 import { hasSrcDir } from './nuxt';
 import { logger } from './outputChannel';
 
@@ -25,18 +26,7 @@ export const getUri = (webview: Webview, extensionUri: Uri, pathList: string[]) 
 
 /** Resolve the current project root, honoring the configured monorepo directory. */
 export const projectRootDirectory = (): string => {
-    const configuration = nuxtrConfiguration().monorepoMode.DirectoryName;
-    const workspaceFolder = workspace.workspaceFolders?.[0]?.uri.fsPath;
-
-    if (!workspaceFolder) {
-        throw new Error('Workspace folder not found');
-    }
-
-    if (configuration) {
-        return `${workspaceFolder}/${configuration}`;
-    }
-
-    return workspaceFolder;
+    return currentProject().root;
 };
 
 
@@ -54,7 +44,7 @@ export const openExternalLink = (url: string) => {
 
 /** Read Nuxtr settings from the current VS Code workspace. */
 export const nuxtrConfiguration = (): NuxtrConfiguration => {
-    const configuration: WorkspaceConfiguration = workspace.getConfiguration('nuxtr');
+    const configuration: WorkspaceConfiguration = workspace.getConfiguration('nuxtr', projectSettingsResource());
     return configuration as unknown as NuxtrConfiguration;
 };
 
