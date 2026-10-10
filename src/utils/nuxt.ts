@@ -1,11 +1,14 @@
+/** Inspect and edit Nuxt project configuration without evaluating application code during activation. */
 import { pathExistsSync } from 'fs-extra';
 import { parseModule } from 'magicast';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { trimEnd } from 'string-ts';
-import { window } from 'vscode';
+import { window, workspace } from 'vscode';
 import { projectRootDirectory } from '.';
 
+/** Find a supported config file in the active project, returning undefined in empty windows. */
 export const findNuxtConfig = (): string | undefined => {
+    if (!workspace.workspaceFolders?.length) { return; }
     const names = ['nuxt.config.ts', 'nuxt.config.js'];
 
     for (const name of names) {
@@ -14,6 +17,7 @@ export const findNuxtConfig = (): string | undefined => {
     }
 };
 
+/** Detect installed Nuxt layers by their configuration file. */
 const isLayer = (module: any) => {
     const modulePath = `${projectRootDirectory()}/node_modules/${module.npm}`;
 
@@ -25,6 +29,7 @@ const isLayer = (module: any) => {
 };
 
 
+/** Read whether a package is present in the project’s modules or layers configuration. */
 export const isModuleConfigured = (module: string) => {
     const nuxtConfigPath = findNuxtConfig();
     const nuxtConfig = readFileSync(`${nuxtConfigPath}`, 'utf8');
@@ -48,6 +53,7 @@ export const isModuleConfigured = (module: string) => {
 }
 
 
+/** Remove a configured module while preserving the rest of the source file. */
 export const removeNuxtModule = (module: any) => {
     try {
         const nuxtConfigPath = findNuxtConfig();
@@ -89,7 +95,9 @@ export const removeNuxtModule = (module: any) => {
     }
 };
 
+/** Check whether the current workspace root contains a Nuxt configuration. */
 export const isNuxtProject = () => {
+    if (!workspace.workspaceFolders?.length) { return false; }
     const names = ['nuxt.config.ts', 'nuxt.config.js'];
 
     for (const name of names) {
@@ -101,7 +109,9 @@ export const isNuxtProject = () => {
     return false;
 };
 
+/** Read the declared Nuxt version from the active package manifest. */
 export const getNuxtVersion = (): string | undefined => {
+    if (!workspace.workspaceFolders?.length) { return; }
     const packageJsonPath = `${projectRootDirectory()}/package.json`;
     if (existsSync(packageJsonPath)) {
         const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
@@ -118,6 +128,7 @@ export const getNuxtVersion = (): string | undefined => {
     }
 };
 
+/** Read a literal application source-directory override. */
 export const hasSrcDir = async (): Promise<string> => {
     const isNuxt = await isNuxtProject();
     if (!isNuxt) {
@@ -136,6 +147,7 @@ export const hasSrcDir = async (): Promise<string> => {
 };
 
 
+/** Read a literal server-directory override. */
 export const hasServerDir = async (): Promise<string> => {
     const isNuxt = await isNuxtProject();
     if (!isNuxt) {
@@ -153,6 +165,7 @@ export const hasServerDir = async (): Promise<string> => {
     return config.serverDir ? `${config.serverDir}` : 'server';
 };
 
+/** Determine whether the declared project version is Nuxt 2. */
 export const isNuxtTwo = (): boolean | undefined => {
     const nuxtVersion = getNuxtVersion();
     if (typeof nuxtVersion === 'string') {
@@ -161,6 +174,7 @@ export const isNuxtTwo = (): boolean | undefined => {
 };
 
 
+/** Apply a supported configuration edit and report errors to the user. */
 export const updateNuxtConfig = (action: 'inject-eslint-devChcker' | 'add-module', input?: string) => {
     try {
         const nuxtConfigPath = findNuxtConfig();

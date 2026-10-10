@@ -1,14 +1,15 @@
+/** Suggest application pages and public assets for Vue template paths. */
 import { readdirSync, statSync } from 'node:fs';
 import { join, sep } from 'pathe';
 import { CompletionItem, CompletionItemKind, CompletionItemProvider, Position, ProviderResult, TextDocument } from 'vscode';
 
 import { isDirectory, isNuxtTwo, projectSrcDirectory } from '../../utils';
 
-let publicDir = isNuxtTwo() ? 'static' : 'public';
 let pagesDir = 'pages';
 
 const DIR_SEPARATOR = sep;
 
+/** List child files and folders beneath the requested application directory. */
 async function provider (dirPath: string): Promise<CompletionItem[]> {
     const items: CompletionItem[] = [];
     const fullPath = join(`${await projectSrcDirectory()}`, dirPath);
@@ -36,8 +37,10 @@ async function provider (dirPath: string): Promise<CompletionItem[]> {
 }
 
 export class PublicDirCompletionProvider implements CompletionItemProvider {
+    /** Match supported Vue template paths and offer filesystem completions. */
     provideCompletionItems (document: TextDocument, position: Position):
     ProviderResult<CompletionItem[]> {
+        const publicDir = isNuxtTwo() ? 'static' : 'public';
         const currentLine = document.lineAt(position.line).text;
         const cursorPosition = position.character;
         const contentBeforeCursor = currentLine.slice(0, Math.max(0, cursorPosition));
@@ -99,8 +102,6 @@ export class PublicDirCompletionProvider implements CompletionItemProvider {
 
                     return suggestionsArray;
                 })
-        } else {
-            publicDir = isNuxtTwo() ? 'static' : 'public';
         }
 
         return provider(publicDir);
@@ -108,8 +109,10 @@ export class PublicDirCompletionProvider implements CompletionItemProvider {
 }
 
 export class NuxtPagesCompletionProvider implements CompletionItemProvider {
+    /** Match supported Vue template paths and offer filesystem completions. */
     provideCompletionItems (document: TextDocument, position: Position):
     ProviderResult<CompletionItem[]> {
+        const publicDir = isNuxtTwo() ? 'static' : 'public';
         const currentLine = document.lineAt(position.line).text;
         const cursorPosition = position.character;
         const contentBeforeCursor = currentLine.slice(0, Math.max(0, cursorPosition));
