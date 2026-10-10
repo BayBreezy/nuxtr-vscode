@@ -1,3 +1,4 @@
+/** Register Nuxt project commands, sidebar, status indicators and owned project watchers. */
 import { ExtensionContext, Uri, commands, window } from 'vscode';
 import nuxtrCommands from './commands'
 import { ModulesView } from './sideBar'
@@ -5,7 +6,7 @@ import { logger, updateDependencies } from './utils';
 import codelens from './codelens'
 import { activateStatusBarIcons, statusBars } from './statusBar'
 import { activateIntellisense } from './intellisense'
-import { filesWatcher } from './watchers';
+import { activateConfigWatchers, filesWatcher } from './watchers';
 
 const extensionCommands = [
     { command: 'nuxtr.createPage', function: nuxtrCommands.createPage },
@@ -48,16 +49,16 @@ const extensionCommands = [
     { command: 'nuxtr.createFileFromTemplate', function: (template: string) => nuxtrCommands.createFileFromTemplate(template) },
     { command: 'nuxtr.directUpgradeNuxt', function: async () => await nuxtrCommands.upgradePackage('nuxt') },
     { command: 'nuxtr.managePackageVersion', function: async () => await nuxtrCommands.managePackageVersion('nuxt') },
-    { command: 'nuxtr.directCreatePage', function: async (filePath: Uri) => await nuxtrCommands.directCreatePage(filePath.path) },
-    { command: 'nuxtr.directCreateComponent', function: async (filePath: Uri) => await nuxtrCommands.directCreateComponent(filePath.path) },
-    { command: 'nuxtr.directCreateComposable', function: (filePath: Uri) => nuxtrCommands.directCreateComposable(filePath.path) },
-    { command: 'nuxtr.directCreateLayout', function: (filePath: Uri) => nuxtrCommands.directCreateLayout(filePath.path) },
-    { command: 'nuxtr.directCreatePlugin', function: (filePath: Uri) => nuxtrCommands.directCreatePlugin(filePath.path) },
-    { command: 'nuxtr.directCreateMiddleware', function: (filePath: Uri) => nuxtrCommands.directCreateMiddleware(filePath.path) },
-    { command: 'nuxtr.directCreateNitroAPI', function: (filePath: Uri) => nuxtrCommands.directCreateNitroAPI(filePath.path) },
-    { command: 'nuxtr.directCreateNitroRoute', function: (filePath: Uri) => nuxtrCommands.directCreateNitroRoute(filePath.path) },
-    { command: 'nuxtr.directCreateStore', function: (filePath: Uri) => nuxtrCommands.directCreateStore(filePath.path) },
-    { command: 'nuxtr.directCreateUtil', function: (filePath: Uri) => nuxtrCommands.directCreateUtil(filePath.path) },
+    { command: 'nuxtr.directCreatePage', function: async (filePath: Uri) => await nuxtrCommands.directCreatePage(filePath.fsPath) },
+    { command: 'nuxtr.directCreateComponent', function: async (filePath: Uri) => await nuxtrCommands.directCreateComponent(filePath.fsPath) },
+    { command: 'nuxtr.directCreateComposable', function: (filePath: Uri) => nuxtrCommands.directCreateComposable(filePath.fsPath) },
+    { command: 'nuxtr.directCreateLayout', function: (filePath: Uri) => nuxtrCommands.directCreateLayout(filePath.fsPath) },
+    { command: 'nuxtr.directCreatePlugin', function: (filePath: Uri) => nuxtrCommands.directCreatePlugin(filePath.fsPath) },
+    { command: 'nuxtr.directCreateMiddleware', function: (filePath: Uri) => nuxtrCommands.directCreateMiddleware(filePath.fsPath) },
+    { command: 'nuxtr.directCreateNitroAPI', function: (filePath: Uri) => nuxtrCommands.directCreateNitroAPI(filePath.fsPath) },
+    { command: 'nuxtr.directCreateNitroRoute', function: (filePath: Uri) => nuxtrCommands.directCreateNitroRoute(filePath.fsPath) },
+    { command: 'nuxtr.directCreateStore', function: (filePath: Uri) => nuxtrCommands.directCreateStore(filePath.fsPath) },
+    { command: 'nuxtr.directCreateUtil', function: (filePath: Uri) => nuxtrCommands.directCreateUtil(filePath.fsPath) },
 ];
 
 export const publicCommands = [
@@ -65,7 +66,7 @@ export const publicCommands = [
 ];
 
 
-// categorize commands and functions
+/** Activate project services once; all registrations are owned by the extension context. */
 export function activateExtension (context: ExtensionContext) {
     // initial output channel logger
     logger.log('Nuxtr is active')
@@ -84,6 +85,8 @@ export function activateExtension (context: ExtensionContext) {
     const sidebarProvider = new ModulesView(context.extensionUri)
 
 
+    activateConfigWatchers(context);
+
     // Initialize file watchers
     new filesWatcher(sidebarProvider, context, statusBars.updatesStatusBar)
 
@@ -100,9 +103,6 @@ export function activateExtension (context: ExtensionContext) {
         context.subscriptions.push(commands.registerCommand(command, commandFunction));
     }
 
-    for (const { command, function: commandFunction } of publicCommands) {
-        context.subscriptions.push(commands.registerCommand(command, commandFunction));
-    }
 
     context.subscriptions.push(commands.registerCommand('nuxtr.refreshModules', () => sidebarProvider.updateModules()))
 
