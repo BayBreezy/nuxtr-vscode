@@ -2,6 +2,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import semver from 'semver';
+import { applyCatalogUpdate, prepareCatalogUpdate, resolveDependency } from '../core/catalogs';
 import { StatusBarItem, commands, window } from 'vscode';
 import { ManagerName, detectManager, managerCommand, managers } from '../core/managers';
 import { executeCommand, requireSuccess } from '../core/process';
@@ -19,7 +20,7 @@ export function getProjectDependencies (): Promise<Dependency[]> {
     const result: Dependency[] = [];
     for (const [dev, values] of [[false, manifest.dependencies], [true, manifest.devDependencies]] as const) {
         for (const [name, specifier] of Object.entries(values || {}) as [string, string][]) {
-            result.push({ name, version: specifier.replace(/^[\^~]/, ''), specifier, dev });
+            result.push({ name, version: resolveDependency(projectRootDirectory(), name, specifier).version || specifier, specifier, dev });
         }
     }
     return Promise.resolve(result);
@@ -91,6 +92,18 @@ export async function installPackageVersion (name: string, version: string) {
     const manager = await choosePackageManager();
     if (!manager) { return; }
     const existing = (await getProjectDependencies()).find(dependency => dependency.name === name);
+    if (existing?.specifier.startsWith('catalog:')) {
+        let target = version;
+        if (target === 'latest') {
+            const result = requireSuccess(await executeCommand({ executable: 'npm', args: ['view', name, 'version', '--json'], cwd: projectRootDirectory() }));
+            target = JSON.parse(result.stdout);
+        }
+        const update = prepareCatalogUpdate(projectRootDirectory(), name, existing.specifier, target);
+        const choice = await window.showInformationMessage(`Updating ${existing.specifier || 'catalog:default'} affects every workspace package referencing ${name}.`, 'Update catalog');
+        if (choice !== 'Update catalog') { return; }
+        await applyCatalogUpdate(update, () => runCommand({ command: managerCommand('pnpm', 'install', currentProject().packageManagerRoot), message: `Updating ${name} catalog`, successMessage: `${name} catalog updated`, errorMessage: 'Catalog installation failed; the catalog edit will be restored', logger: true }));
+        return;
+    }
     await runCommand({ command: managerCommand(manager, 'add', projectRootDirectory(), [`${name}@${version}`], existing?.dev ?? true), message: `Installing ${name}@${version}`, successMessage: `${name} installed`, errorMessage: `Failed to install ${name}`, logger: true });
 }
 

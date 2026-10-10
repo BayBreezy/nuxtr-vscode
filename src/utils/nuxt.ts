@@ -1,6 +1,7 @@
 /** Inspect and edit Nuxt project configuration without evaluating application code during activation. */
 import { relative } from 'node:path';
 import semver from 'semver';
+import { resolveDependency } from '../core/catalogs';
 import { DirectoryKind, readStaticConfig, resolveDirectories } from '../core/directories';
 import { configAt } from '../core/project';
 import { pathExistsSync } from 'fs-extra';
@@ -112,7 +113,7 @@ export const getNuxtVersion = (): string | undefined => {
         };
         if ('nuxt' in dependencies) {
             const nuxtVersion = dependencies.nuxt;
-            return nuxtVersion.replace('^', '');
+            return resolveDependency(projectRootDirectory(), 'nuxt', nuxtVersion).version;
         }
     } else {
         return;
