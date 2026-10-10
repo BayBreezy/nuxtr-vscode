@@ -1,4 +1,5 @@
-import { TSConfig } from 'pkg-types'
+/** Shared contracts for extension settings, dependency data and sidebar messages. */
+import type { TSConfig } from 'pkg-types'
 
 export interface ConfigurationProperty {
     title?: string;
@@ -9,7 +10,7 @@ export interface ConfigurationProperty {
     id?: string;
     properties?: { [key: string]: ConfigurationProperty };
     default?: any;
-    type: string;
+    type?: string;
 }
 
 export interface NuxtrConfiguration {

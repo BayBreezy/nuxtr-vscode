@@ -138,12 +138,10 @@ export const runCommand = async (args: {
 };
 
 
-const _jiti = createJiti(projectRootDirectory(), { interopDefault: true });
-
 /** Load a package from the Nuxt project and offer installation if it is missing. */
 export async function tryImport (path: string): Promise<undefined | unknown> {
     try {
-        return await _jiti.import(path)
+        return await createJiti(projectRootDirectory(), { interopDefault: true }).import(path)
     } catch {
         const response = await window.showErrorMessage(
             'Dependencies are not installed. Install dependencies first?',
