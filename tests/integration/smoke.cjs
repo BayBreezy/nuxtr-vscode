@@ -57,6 +57,21 @@ exports.run = async function run () {
         const importing = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(root, 'import-test.vue'));
         const importItems = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', importing.uri, new vscode.Position(1, 12));
         assert(!importItems.items.some(item => item.label === 'vueBase'));
+        const serverDirectory = process.env.NUXTR_SCENARIO === 'custom' ? 'backend' : 'server';
+        for (const extension of ['ts', 'js']) {
+            const server = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(root, serverDirectory, 'api/snippet-test.' + extension));
+            const h3 = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', server.uri, new vscode.Position(0, 0));
+            assert(h3.items.some(item => item.label === 'h3ReadBody'), 'H3 snippets must resolve the server directory in JavaScript and TypeScript');
+            await vscode.workspace.getConfiguration('nuxtr').update('snippets.nitro', false, vscode.ConfigurationTarget.Workspace);
+            const off = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', server.uri, new vscode.Position(0, 0));
+            assert(!off.items.some(item => item.label === 'h3ReadBody'), 'The Nitro toggle must apply to H3 without reloading');
+            await vscode.workspace.getConfiguration('nuxtr').update('snippets.nitro', true, vscode.ConfigurationTarget.Workspace);
+        }
+        for (const uri of [vscode.Uri.joinPath(root, 'client-snippet-test.ts'), blank.uri, vscode.Uri.joinPath(root, serverDirectory, 'api/import-test.ts')]) {
+            const outside = await vscode.workspace.openTextDocument(uri);
+            const items = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', uri, outside.positionAt(outside.getText().length));
+            assert(!items.items.some(item => item.label === 'h3ReadBody'), 'H3 must be suppressed in application files, Vue templates and imports');
+        }
         assert.equal(readFileSync(manifestPath, 'utf8'), originalManifest, 'Snippet toggles must never rewrite installed manifests');
     }
     assert(!extension.packageJSON.contributes.languages.some(x => x.id === 'Log'));

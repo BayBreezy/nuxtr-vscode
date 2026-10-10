@@ -165,6 +165,8 @@ Nuxt Snippets are enabled by default. You can toggle them on or off using this s
 
 **Nitro Snippets**: Nitro powers the Nuxt Server Engine. For detailed information, refer to the [Nitro Docs](https://nitro.unjs.io).
 
+H3 v1 snippets cover all 72 request, response and advanced helpers from the [request](https://v1.h3.dev/utils/request), [response](https://v1.h3.dev/utils/response) and [advanced](https://v1.h3.dev/utils/advanced) references. In JavaScript/TypeScript files under the resolved server directory, type a helper name such as `readBody`, or its explicit alias such as `h3ReadBody`, and select the Nuxtr suggestion. Custom `serverDir` settings are supported. H3 helpers assume the Nitro 2/H3 v1 auto-imports used by Nuxt 3 and 4. Session snippets require a private `runtimeConfig.sessionPassword` secret of at least 32 characters; edit the highlighted values for your application.
+
 Nitro Snippets are enabled by default. You can customize their behavior using this setting:
 
 ```JSON

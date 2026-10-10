@@ -1,5 +1,7 @@
 ## Unreleased — modernization
 
+- Add all 72 documented H3 v1 helpers as server-only Nitro snippets; correct cookie helper arguments and support custom server directories.
+
 - Show project structure in the application-folder Explorer menu, and API/server-utility creation on resolved server folders, including custom/nested layouts.
 
 - Raise the minimum VS Code version to 1.141.0; development/CI use Node 24.20.0 and pnpm 12.10.1.

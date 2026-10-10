@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createJiti } from 'jiti';
 import { parseDocument } from 'yaml';
+import snippetFixtures from './snippet-fixtures.cjs';
 const jiti = createJiti(import.meta.url);
 const { configureTailwindSource, tailwindRecipe } = await jiti.import('../src/core/tailwind.ts');
 const { formatGeneratedContent, piniaOptionsTemplate, serverMiddlewareTemplate } = await jiti.import('../src/core/generated.ts');
@@ -49,7 +50,7 @@ async function fixture (major, recipe) {
     await writeFile(join(root, 'package.json'), JSON.stringify({ name: 'nuxtr-fixture', private: true, type: 'module', packageManager: 'pnpm@12.10.1', devDependencies: dependencies }, null, 2));
     await writeFile(join(root, 'tsconfig.json'), JSON.stringify(major === 3 ? { extends: './.nuxt/tsconfig.json' } : { files: [], references: ['app', 'server', 'shared', 'node'].map(context => ({ path: './.nuxt/tsconfig.' + context + '.json' })) }, null, 2));
     await fixtureSettings(root);
-    await writeFile(join(root, 'nuxt.config.ts'), configureTailwindSource('/** Generated fixture configuration. */\nexport default defineNuxtConfig({ devtools: { enabled: false }, compatibilityDate: "2026-10-01" })\n', recipe, '~/assets/css/tailwind.css'));
+    await writeFile(join(root, 'nuxt.config.ts'), configureTailwindSource('/** Generated fixture configuration. */\nexport default defineNuxtConfig({ devtools: { enabled: false }, runtimeConfig: { sessionPassword: "fixture-only-secret-must-never-be-used-in-production" }, compatibilityDate: "2026-10-01" })\n', recipe, '~/assets/css/tailwind.css'));
     await writeFile(join(app, 'assets/css/tailwind.css'), definition.css);
     await writeFile(join(app, 'app.vue'), '<!-- Generated fixture application shell. -->\n<template><NuxtPage /></template>\n');
     await writeFile(join(app, 'pages/index.vue'), '<!-- Generated fixture page verifies CSS compilation. -->\n<template><h1 class="text-3xl font-bold">Nuxtr fixture</h1></template>\n');
@@ -61,6 +62,7 @@ async function fixture (major, recipe) {
         [join(app, 'stores/setup.ts'), piniaSetupContent('smokeSetup')],
         [join(app, 'composables/useSmoke.ts'), composableTemplate('smoke')],
         [join(root, 'server/api/hello.ts'), nitroDefaultTemplate],
+        [join(root, 'server/api/h3-snippet-check.ts'), snippetFixtures.h3Fixture()],
         [join(root, 'server/middleware/context.ts'), serverMiddlewareTemplate],
         [join(app, 'composables', scaffoldFileName('useJavaScript', 'composable', 'js', true)), composableTemplate('useJavaScript')],
         [join(root, 'server/api', scaffoldFileName('javascript.get.ts', 'api', 'js')), nitroDefaultTemplate]

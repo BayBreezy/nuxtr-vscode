@@ -1,15 +1,17 @@
 /** Load snippets from extension resources and own dynamic, project-scoped completion providers. */
 import { CompletionItem, CompletionItemKind, ConfigurationTarget, ExtensionContext, MarkdownString, SnippetString, Uri, languages, workspace } from 'vscode';
-import { ParsedSnippet, isImportContext, parseSnippets } from '../core/snippets';
+import { ParsedSnippet, isImportContext, isServerSnippetContext, parseSnippets } from '../core/snippets';
 import { currentProject, withProject } from '../services/project';
 import { generateVueFileTemplate } from '../utils/files';
+import { projectDirectory } from '../utils/nuxt';
 const resources = [
     { source: 'nuxt', file: 'components', languages: ['html', 'vue'], context: 'template' },
     { source: 'nuxt', file: 'boilerplates', languages: ['vue'], context: 'boilerplate' },
     { source: 'nuxt', file: 'composables', languages: ['javascript', 'typescript', 'vue'], context: 'script' },
     { source: 'nuxt', file: 'utils', languages: ['javascript', 'typescript', 'vue'], context: 'script' },
     { source: 'nitro', file: 'boilerplates', languages: ['javascript', 'typescript', 'vue'], context: 'script' },
-    { source: 'nitro', file: 'utils', languages: ['javascript', 'typescript', 'vue'], context: 'script' }
+    { source: 'nitro', file: 'utils', languages: ['javascript', 'typescript', 'vue'], context: 'script' },
+    { source: 'nitro', file: 'h3', languages: ['javascript', 'typescript'], context: 'server' }
 ] as const;
 
 /** Convert a bundled definition to a snippet completion without interpreting its tab stops as plain text. */
@@ -37,7 +39,10 @@ export async function activateSnippets (context: ExtensionContext) {
                 if (!workspace.getConfiguration('nuxtr', document.uri).get(`snippets.${resource.source}`, true)) { return []; }
                 const before = document.getText().slice(0, document.offsetAt(position));
                 if (isImportContext(before)) { return []; }
-                try { currentProject(document.uri); } catch { return []; }
+                try {
+                    const project = currentProject(document.uri);
+                    if (resource.context === 'server' && !withProject(project, () => isServerSnippetContext(document.languageId, document.uri.fsPath, projectDirectory('server')))) { return []; }
+                } catch { return []; }
                 const inScript = before.lastIndexOf('<script') > before.lastIndexOf('</script>');
                 if (document.languageId === 'vue' && (resource.context === 'script' ? !inScript : resource.context === 'template' && inScript)) { return []; }
                 if (resource.context === 'boilerplate' && !/^\s*[\w-]*$/.test(document.lineAt(position).text.slice(0, position.character))) { return []; }

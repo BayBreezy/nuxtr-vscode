@@ -19,16 +19,6 @@
     "body": ["const ${1:cookie} = useCookie('$2'${3:, })"],
     "description": "useCookie"
   },
-  "getCookie": {
-    "prefix": "getCookie",
-    "body": ["const ${1:cookie} = getCookie('$2'${3:, })"],
-    "description": "getCookie"
-  },
-  "setCookie": {
-    "prefix": "setCookie",
-    "body": ["setCookie('$1'${2:, })"],
-    "description": "setCookie"
-  },
   "useError": {
     "prefix": "useError",
     "body": ["const ${1:error} = useError()"],

@@ -45,6 +45,11 @@ async function main () {
             writeFileSync(join(project, 'blank.vue'), '');
             writeFileSync(join(project, 'import-test.vue'), '<script setup>\nimport { vue');
             writeFileSync(join(project, 'asset-test.vue'), '<template><img src="/"></template>');
+            const serverDirectory = scenario === 'custom' ? 'backend' : 'server';
+            mkdirSync(join(project, serverDirectory, 'api'), { recursive: true });
+            for (const extension of ['ts', 'js']) { writeFileSync(join(project, serverDirectory, 'api/snippet-test.' + extension), ''); }
+            writeFileSync(join(project, serverDirectory, 'api/import-test.ts'), 'import { get');
+            writeFileSync(join(project, 'client-snippet-test.ts'), '');
             writeFileSync(join(folder, 'pnpm-lock.yaml'), 'lockfileVersion: \'9.0\'\n');
         }
         const binaries = join(folder, 'test-bin');

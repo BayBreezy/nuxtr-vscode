@@ -1,5 +1,11 @@
 /** Decode packaged VS Code snippets and detect import contexts where boilerplate insertion is inappropriate. */
+import { containsPath } from './project';
 export interface ParsedSnippet { name: string; prefixes: string[]; body: string; description: string; fileTemplate: boolean; }
+
+/** Restrict H3 helpers to server JavaScript/TypeScript, using the resolved directory rather than its name. */
+export function isServerSnippetContext (language: string, documentPath: string, serverDirectory: string): boolean {
+    return ['javascript', 'typescript'].includes(language) && containsPath(serverDirectory, documentPath);
+}
 
 /** Validate snippet JSON and preserve standard alternate prefixes, multiline bodies and tab stops. */
 export function parseSnippets (value: Record<string, any>): ParsedSnippet[] {
