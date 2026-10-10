@@ -1,5 +1,6 @@
 /** Register Nuxt project commands, sidebar, status indicators and owned project watchers. */
 import { ExtensionContext, Uri, commands, window } from 'vscode';
+import { activateSnippets } from './snippets';
 import { selectProject, withProject } from './services/project';
 import nuxtrCommands from './commands'
 import { ModulesView } from './sideBar'
@@ -68,9 +69,10 @@ export const publicCommands = [
 
 
 /** Activate project services once; all registrations are owned by the extension context. */
-export function activateExtension (context: ExtensionContext) {
+export async function activateExtension (context: ExtensionContext) {
     // initial output channel logger
     logger.log('Nuxtr is active')
+    await activateSnippets(context);
 
     // global state command
     context.subscriptions.push(commands.registerCommand('nuxtr.globalState', ({ update, name, value }) => {

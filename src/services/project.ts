@@ -24,7 +24,9 @@ function configuredProject (resource?: Uri): ProjectContext | undefined {
 export function currentProject (resource?: Uri): ProjectContext {
     if (!resource && operation.getStore()) { return operation.getStore()!; }
     const document = resource || window.activeTextEditor?.document.uri;
-    const result = configuredProject(document) || projectForResource(projects, document?.fsPath) || selected || projects[0];
+    const owned = configuredProject(document) || projectForResource(projects, document?.fsPath);
+    if (resource && resource.scheme !== 'untitled' && !owned) { throw new Error('This resource is outside the discovered Nuxt projects.'); }
+    const result = owned || selected || projects[0];
     if (!result) { throw new Error('No Nuxt project found. Open a Nuxt folder or run Nuxtr: Create Project.'); }
     return result;
 }
