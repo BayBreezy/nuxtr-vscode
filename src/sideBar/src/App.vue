@@ -1,15 +1,18 @@
+<!-- Route extension-host navigation events to the sidebar pages. -->
 <template>
   <router-view></router-view>
 </template>
 
 <script setup lang="ts">
+import { useHostMessages } from "./composables/events";
+import { onMounted } from "vue";
+import { vscode } from "./utilities/vscode";
 import { useRouter } from "vue-router";
 
-// import Modules from "./components/Modules.vue";
 const router = useRouter();
-// router.push("/");
+onMounted(() => vscode.postMessage({ command: "ready" }));
 
-window.addEventListener("message", (event: any) => {
+useHostMessages( (event: any) => {
   const message = event.data;
   switch (message.command) {
     case "modules":

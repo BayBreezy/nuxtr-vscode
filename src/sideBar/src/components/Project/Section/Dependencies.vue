@@ -1,3 +1,4 @@
+<!-- Display declared dependencies, versions and host-managed upgrade/removal actions. -->
 <template>
     <div class="my-0.5 flex w-full select-none flex-col items-center text-[var(--vscode-foreground)]">
         <div class="flex w-full cursor-pointer flex-row items-center" @click="expandSection">
@@ -59,6 +60,7 @@ import IconModule from "../../Icons/Module.vue";
 import { vscode } from "../../../utilities/vscode";
 
 const isSectionOpened = ref(false);
+/** Expand or collapse the dependency section. */
 const expandSection = () => {
     isSectionOpened.value = !isSectionOpened.value;
 };
@@ -88,17 +90,19 @@ defineProps({
     },
 });
 
-const upgradeModule = (module: Object) => {
+/** Request an upgrade through the selected project manager. */
+const upgradeModule = (module: string) => {
     vscode.postMessage({
         command: "upgradeModule",
-        module: module,
+        module,
     });
 };
 
-const removeModule = (module: Object) => {
+/** Request confirmed removal through the selected project manager. */
+const removeModule = (module: string) => {
     vscode.postMessage({
         command: "removeModule",
-        module: module,
+        module,
     });
 };
 </script>

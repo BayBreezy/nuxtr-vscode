@@ -1,7 +1,8 @@
 /** Complete .nuxtrc settings using the schema matching the project’s Nuxt major version. */
 import * as nuxtRcSchemaJson from '../../content/nuxt4.schema.json';
 import * as nuxtThreeSchema from '../../content/nuxt3.schema.json';
-import { getNuxtVersion, isNuxtTwo } from '../../utils/nuxt';
+import { getNuxtVersion } from '../../utils/nuxt';
+import { currentProject, withProject } from '../../services/project';
 import * as vscode from 'vscode';
 import type { ConfigurationProperty } from '../../types';
 
@@ -57,7 +58,7 @@ function createCompletionItem (propertyName: string, property: ConfigurationProp
 export class CustomCompletionProvider implements vscode.CompletionItemProvider {
     /** Offer top-level or nested properties from the installed project's schema generation. */
     provideCompletionItems (document: vscode.TextDocument, position: vscode.Position) {
-        const nuxtRcSchema = (getNuxtVersion()?.startsWith('3.') ? nuxtThreeSchema : nuxtRcSchemaJson) as { properties: { [key: string]: ConfigurationProperty } };
+        const nuxtRcSchema = (withProject(currentProject(document.uri), getNuxtVersion)?.startsWith('3.') ? nuxtThreeSchema : nuxtRcSchemaJson) as { properties: { [key: string]: ConfigurationProperty } };
         const linePrefix = document.lineAt(position).text.slice(0, position.character);
 
         const completionItems =  Object.keys(nuxtRcSchema.properties)

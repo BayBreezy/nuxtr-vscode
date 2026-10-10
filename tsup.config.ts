@@ -20,9 +20,6 @@ export default defineConfig({
     external: ['vscode'],
     noExternal: [
         '@nuxt/schema',
-        'destr',
-        'fs-extra',
-        'jiti',
         'magicast',
         'ofetch',
         'pathe',

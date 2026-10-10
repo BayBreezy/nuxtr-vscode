@@ -6,10 +6,7 @@ import semver from 'semver';
 import { resolveDependency } from '../core/catalogs';
 import { DirectoryKind, readStaticConfig, resolveDirectories } from '../core/directories';
 import { configAt } from '../core/project';
-import { pathExistsSync } from 'fs-extra';
-import { parseModule } from 'magicast';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { trimEnd } from 'string-ts';
 import { window, workspace } from 'vscode';
 import { projectRootDirectory } from '.';
 

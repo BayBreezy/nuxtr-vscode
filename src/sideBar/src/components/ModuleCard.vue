@@ -1,3 +1,4 @@
+<!-- Display a module’s metadata and installation status. -->
 <template>
   <div
     class="hover: relative select-none p-3 px-0 pb-5 text-[var(--vscode-foreground)]"
@@ -55,6 +56,7 @@
 </template>
 
 <script setup lang="ts">
+import { useHostMessages } from "../composables/events";
 import { vscode } from "../utilities/vscode";
 
 import Placeholder from "./Icons/Placeholder.vue";
@@ -70,11 +72,11 @@ const props = defineProps<{
   installed?: boolean;
 }>();
 
-const moduleIconURL = `https://raw.githubusercontent.com/nuxt/modules/main/icons/${props.module.icon}`;
 
 const disabled = ref(false);
 const buttonText = ref("Install");
 
+/** Format catalogue counts for the compact module card. */
 const formatNumber = (number: number) => {
   if (number >= 1000) {
     return (number / 1000).toFixed(0) + "k";
@@ -82,6 +84,7 @@ const formatNumber = (number: number) => {
     return number.toString();
   }
 };
+/** Request installation and show pending status until the host reports its result. */
 const installModule = () => {
   vscode.postMessage({
     command: "installModule",
@@ -90,7 +93,7 @@ const installModule = () => {
   disabled.value = true;
   buttonText.value = "Installing";
 };
-window.addEventListener("message", (event: any) => {
+useHostMessages( (event: any) => {
   const message = event.data;
   switch (message.command) {
     case "moduleInstalled":

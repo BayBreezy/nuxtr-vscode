@@ -1,8 +1,10 @@
 /** Present the Vue sidebar and dispatch project dependency, module and template actions. */
+import { SidebarEvent, parseSidebarRequest } from '../core/messages';
+import { ProjectContext } from '../core/project';
+import { currentProject, withProject } from '../services/project';
 import { managerCommand, terminalCommand } from '../core/managers';
 import { choosePackageManager } from '../utils/dependency';
 import { ModuleMetadata, canonicalPackageName, installThenConfigure, moduleIsDevelopment } from '../core/modules';
-import { destr } from 'destr'
 import { existsSync, readFileSync, readdirSync, unlinkSync } from 'node:fs'
 import { capitalize } from 'string-ts'
 import * as vscode from 'vscode'
@@ -28,15 +30,20 @@ import {
 import commands from '../commands'
 
 
-const nonce = getNonce()
 export class ModulesView implements vscode.WebviewViewProvider {
     _view?: vscode.WebviewView
+    private listeners: vscode.Disposable[] = [];
+    private project?: ProjectContext;
+    private request = 0;
+    private route: 'projectView' | 'modules' = 'projectView';
+    private pendingAction?: 'addModule' | 'addLayer';
 
     /** Keep the extension URI for packaged asset resolution. */
     constructor (private readonly _extensionUri: vscode.Uri) {}
 
     /** Initialize the webview and bind sidebar visibility and messages. */
     public resolveWebviewView (webviewView: vscode.WebviewView) {
+        this.dispose();
         this._view = webviewView
 
         webviewView.webview.options = {
@@ -52,21 +59,26 @@ export class ModulesView implements vscode.WebviewViewProvider {
             this.goToProjectView()
         }
 
-        webviewView.onDidChangeVisibility(() => {
+        this.listeners.push(webviewView.onDidChangeVisibility(() => {
             if (webviewView.visible) {
                 this.goToProjectView()
             }
-        })
+        }), webviewView.onDidDispose(() => this.dispose()));
     }
+
+    /** Dispose listeners whenever the sidebar is replaced or the extension shuts down. */
+    public dispose () { for (const listener of this.listeners.splice(0)) { listener.dispose(); } this._view = undefined; }
 
     /** Request sidebar project navigation and refresh its project data. */
     public goToProjectView () {
         this.postMessage({ command: 'projectView' })
-        this.getDependencies()
+        void this.getDependencies().catch(error => { vscode.window.showErrorMessage(String(error)); })
     }
 
     /** Send project package, template and update metadata to the sidebar. */
     public async getDependencies () {
+        this.project = currentProject();
+        const request = ++this.request;
         const dependencies = await getProjectDependencies()
         const scripts = getProjectScripts()
 
@@ -92,6 +104,7 @@ export class ModulesView implements vscode.WebviewViewProvider {
                 .filter((file) => file.match(/.*\.(page-template|layout-template)/))
             : []
 
+        if (request !== this.request) { return; }
         this.postMessage({
             command: 'projectViewData',
             data: {
@@ -105,9 +118,14 @@ export class ModulesView implements vscode.WebviewViewProvider {
 
         await this.updateModules();
 
-        let outdatedDependencies: any = await getOutdatedPackages()
+        let outdatedDependencies: any;
+        try { outdatedDependencies = await getOutdatedPackages(); } catch (error) {
+            if (request === this.request) { this.postMessage({ command: 'outdatedDependencies', data: [] }); }
+            throw error;
+        }
+        if (request !== this.request) { return; }
 
-        outdatedDependencies = destr(outdatedDependencies)
+        outdatedDependencies = JSON.parse(outdatedDependencies)
 
         if (outdatedDependencies) {
             outdatedDependencies = Object.keys(outdatedDependencies).map((key) => {
@@ -150,7 +168,9 @@ export class ModulesView implements vscode.WebviewViewProvider {
     }
 
     /** Send an extension-host event to the current webview when available. */
-    public postMessage (message: any) {
+    public postMessage (message: SidebarEvent) {
+        if (message.command === 'projectView' || message.command === 'modules') { this.route = message.command; }
+        if (message.command === 'addModule' || message.command === 'addLayer') { this.pendingAction = message.command; }
         if (this._view) {
             this._view.webview.postMessage(message)
         }
@@ -158,6 +178,7 @@ export class ModulesView implements vscode.WebviewViewProvider {
 
     /** Render the sidebar shell with local JS/CSS asset URIs. */
     private _getHtmlForWebview (webview: vscode.Webview) {
+        const nonce = getNonce();
         const stylesUri = getUri(webview, this._extensionUri, ['src', 'sideBar', 'build', 'assets', 'index.css'])
         // The JS file from the Vue build output
         const scriptUri = getUri(webview, this._extensionUri, ['src', 'sideBar', 'build', 'assets', 'index.js'])
@@ -168,7 +189,7 @@ export class ModulesView implements vscode.WebviewViewProvider {
         <head>
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <meta http-equiv="Content-Security-Policy" content="default-src https://fonts.gstatic.com/ https://fonts.googleapis.com/ https://raw.githubusercontent.com/ https://api.nuxtr.com/  img-src https: data: style-src 'unsafe-inline' ${webview.cspSource} script-src 'nonce-${nonce}'">
+          <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} https: data:; style-src ${webview.cspSource} 'unsafe-inline'; font-src ${webview.cspSource}; script-src 'nonce-${nonce}'; connect-src 'none';">
           <link rel="stylesheet" type="text/css" href="${stylesUri}">
           <title>Nuxtr UI</title>
         </head>
@@ -275,55 +296,30 @@ export class ModulesView implements vscode.WebviewViewProvider {
 
     }
 
-    /** Dispatch sidebar requests to extension-host commands. */
+    /** Validate and await a sidebar action in the project that supplied the displayed data. */
     private _setWebviewMessageListener (webview: vscode.Webview) {
-        webview.onDidReceiveMessage((message: any) => {
-            const { command, module, script } = message
-            switch (command) {
-                case 'installModule': {
-                    this.installModule(module)
-                    break
-                }
-                case 'runAction': {
-                    this.runAction(script)
-                    break
-                }
-                case 'upgradeModule': {
-                    this.upgradeModule(module)
-                    break
-                }
-                case 'removeModule': {
-                    this.removeModule(module)
-                    break
-                }
-                case 'editSnippet': {
-                    this.editSnippet(message.data)
-                    break
-                }
-                case 'deleteSnippet': {
-                    this.deleteSnippet(message.data)
-                    break
-                }
-                case 'configureNewSnippet': {
-                    vscode.commands.executeCommand('workbench.action.openSnippets')
-                    break
-                }
-                case 'editTemplate': {
-                    this.editTemplate(message.data)
-                    break
-                }
-                case 'deleteTemplate': {
-                    this.deleteTemplate(message.data)
-                    break
-                }
-                case 'createFileFromTemplate': {
-                    vscode.commands.executeCommand('nuxtr.createFileFromTemplate', message.data)
-                    break
-                }
-                case 'createEmptyFileTemplate': {
-                    vscode.commands.executeCommand('nuxtr.createEmptyFileTemplate')
-                }
-            }
-        })
+        this.listeners.push(webview.onDidReceiveMessage(async (raw: unknown) => {
+            const message = parseSidebarRequest(raw);
+            if (!message) { return; }
+            try {
+                if (message.command === 'openExternal') { await openExternalLink(message.url); return; }
+                await withProject(this.project || currentProject(), async () => {
+                    switch (message.command) {
+                        case 'ready': { this.postMessage({ command: this.route }); if (this.pendingAction) { this.postMessage({ command: this.pendingAction }); } await this.getDependencies(); break; }
+                        case 'installModule': { await this.installModule(message.module); break; }
+                        case 'runAction': { await this.runAction(message.script); break; }
+                        case 'upgradeModule': { await this.upgradeModule(message.module); break; }
+                        case 'removeModule': { await this.removeModule(message.module); break; }
+                        case 'editSnippet': { this.editSnippet(message.data); break; }
+                        case 'deleteSnippet': { await this.deleteSnippet(message.data); break; }
+                        case 'editTemplate': { this.editTemplate(message.data); break; }
+                        case 'deleteTemplate': { await this.deleteTemplate(message.data); break; }
+                        case 'configureNewSnippet': { await vscode.commands.executeCommand('workbench.action.openSnippets'); break; }
+                        case 'createFileFromTemplate': { await vscode.commands.executeCommand('nuxtr.createFileFromTemplate', message.data); break; }
+                        case 'createEmptyFileTemplate': { await vscode.commands.executeCommand('nuxtr.createEmptyFileTemplate'); break; }
+                    }
+                });
+            } catch (error) { vscode.window.showErrorMessage(String(error)); }
+        }));
     }
 }
