@@ -1043,7 +1043,8 @@
     "test:extension": "node scripts/test-extension.cjs",
     "validate": "node scripts/validate.cjs",
     "schema:generate": "node scripts/generate-schema.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:fixtures": "node scripts/test-fixtures.mjs"
   },
   "devDependencies": {
     "@nuxt/schema": "^4.6.1",
