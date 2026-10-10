@@ -1,3 +1,4 @@
+/** Bundle extension runtime dependencies into the CommonJS entrypoint loaded by VS Code. */
 import { defineConfig } from 'tsup'
 
 export default defineConfig({
@@ -28,6 +29,7 @@ export default defineConfig({
         'pkg-types',
         'string-ts',
         'giget',
-        'semver'
+        'semver',
+        'yaml'
     ]
 })
