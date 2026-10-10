@@ -399,6 +399,11 @@
           "command": "nuxtr.projectStructure",
           "when": " nuxtr.isNuxtProject && explorerResourceIsFolder && explorerResourceIsRoot",
           "group": "navigation"
+        },
+        {
+          "command": "nuxtr.directCreateNitroTask",
+          "when": "nuxtr.isNuxtProject && explorerResourceIsFolder",
+          "group": "nuxtr/nitro"
         }
       ],
       "editor/context": [
@@ -981,6 +986,21 @@
       {
         "command": "nuxtr.selectProject",
         "title": "Nuxtr: Select Nuxt Project"
+      },
+      {
+        "command": "nuxtr.createNitroTask",
+        "title": "Create Nitro Task",
+        "category": "Nuxtr"
+      },
+      {
+        "command": "nuxtr.directCreateNitroTask",
+        "title": "Create Nitro Task",
+        "category": "Nuxtr"
+      },
+      {
+        "command": "nuxtr.enableNitroTasks",
+        "title": "Enable Experimental Nitro Tasks",
+        "category": "Nuxtr"
       }
     ],
     "keybindings": [],

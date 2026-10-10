@@ -9,6 +9,7 @@ const { configureTailwindSource, tailwindRecipe } = await jiti.import('../src/co
 const { formatGeneratedContent, piniaOptionsTemplate, serverMiddlewareTemplate } = await jiti.import('../src/core/generated.ts');
 const { piniaSetupContent } = await jiti.import('../src/templates/stores.ts');
 const { nitroDefaultTemplate, composableTemplate } = await jiti.import('../src/templates/typeScriptFiles.ts');
+const { installedNitroMajor, nitroTaskTemplate, enableTasksSource } = await jiti.import('../src/core/tasks.ts');
 const { scaffoldFileName } = await jiti.import('../src/core/templates.ts');
 const { executeCommand, requireSuccess } = await jiti.import('../src/core/process.ts');
 
@@ -66,6 +67,12 @@ async function fixture (major, recipe) {
     ]) { await writeFile(path, formatGeneratedContent(content, major === 3, 4, '\n')); }
     await check(root, ['install']);
     await check(root, ['install', '--frozen-lockfile']);
+    const generation = installedNitroMajor(root);
+    await mkdir(join(root, 'server/tasks/db'), { recursive: true });
+    await writeFile(join(root, 'server/tasks/db/migrate.ts'), nitroTaskTemplate('db:migrate', generation));
+    const config = join(root, 'nuxt.config.ts');
+    await writeFile(config, enableTasksSource(await readFile(config, 'utf8')));
+    console.log('NITRO GENERATION: ' + generation);
     await check(root, ['exec', 'nuxt', 'prepare']);
     await check(root, ['exec', 'nuxt', 'typecheck']);
     await check(root, ['exec', 'nuxt', 'build']);
