@@ -57,6 +57,20 @@ exports.run = async function run () {
         const importing = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(root, 'import-test.vue'));
         const importItems = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', importing.uri, new vscode.Position(1, 12));
         assert(!importItems.items.some(item => item.label === 'vueBase'));
+        const api = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(root, 'api-snippet-test.vue'));
+        const script = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', api.uri, new vscode.Position(1, 0));
+        assert(script.items.some(item => item.label === 'useFetch'), 'Nuxt composables must be available in Vue scripts');
+        assert(!script.items.some(item => item.label === 'NuxtPage'), 'Component snippets must stay outside Vue scripts');
+        const nuxt4 = ['nuxt4', 'two-projects', 'custom', 'legacy4'].includes(process.env.NUXTR_SCENARIO);
+        assert.equal(script.items.some(item => item.label === 'createUseFetch'), nuxt4, 'Factory snippets must honor the Nuxt version requirement');
+        const template = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', api.uri, new vscode.Position(4, 0));
+        assert(template.items.some(item => item.label === 'NuxtPage'), 'Documented components must be available in Vue templates');
+        assert(!template.items.some(item => item.label === 'useFetch'), 'Composable snippets must stay outside Vue templates');
+        assert.equal(template.items.some(item => item.label === 'NuxtAnnouncer'), nuxt4, 'Component version guards must match the selected project');
+        await vscode.workspace.getConfiguration('nuxtr').update('snippets.nuxt', false, vscode.ConfigurationTarget.Workspace);
+        const apiOff = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', api.uri, new vscode.Position(1, 0));
+        assert(!apiOff.items.some(item => item.label === 'useFetch'), 'Expanded API snippets must honor the existing toggle');
+        await vscode.workspace.getConfiguration('nuxtr').update('snippets.nuxt', true, vscode.ConfigurationTarget.Workspace);
         const serverDirectory = process.env.NUXTR_SCENARIO === 'custom' ? 'backend' : 'server';
         for (const extension of ['ts', 'js']) {
             const server = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(root, serverDirectory, 'api/snippet-test.' + extension));

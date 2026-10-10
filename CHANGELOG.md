@@ -1,5 +1,7 @@
 ## Unreleased — modernization
 
+- Cover all Nuxt 4 API components, composables and utilities, preserve existing prefixes, link official docs, correct invalid signatures and guard newer APIs by project version.
+
 - Add all 72 documented H3 v1 helpers as server-only Nitro snippets; correct cookie helper arguments and support custom server directories.
 
 - Show project structure in the application-folder Explorer menu, and API/server-utility creation on resolved server folders, including custom/nested layouts.
