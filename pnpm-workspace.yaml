@@ -1,2 +1,7 @@
 packages:
-  - "src/sideBar"
+  - src/sideBar
+nodeLinker: hoisted
+allowBuilds:
+  esbuild: true
+overrides:
+  eslint: ^9.11.0
