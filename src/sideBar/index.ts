@@ -1,4 +1,7 @@
 /** Present the Vue sidebar and dispatch project dependency, module and template actions. */
+import { cachedCatalogue, fetchCatalogue } from '../services/catalogue';
+import { CataloguePayload, moduleCompatible } from '../core/catalogue';
+import { getNuxtVersion } from '../utils/nuxt';
 import { openPackageReleaseNotes } from '../services/releases';
 import { SidebarEvent, parseSidebarRequest } from '../core/messages';
 import { ProjectContext } from '../core/project';
@@ -36,11 +39,12 @@ export class ModulesView implements vscode.WebviewViewProvider {
     private listeners: vscode.Disposable[] = [];
     private project?: ProjectContext;
     private request = 0;
+    private catalogue: CataloguePayload;
     private route: 'projectView' | 'modules' = 'projectView';
     private pendingAction?: 'addModule' | 'addLayer';
 
     /** Keep the extension URI for packaged asset resolution. */
-    constructor (private readonly _extensionUri: vscode.Uri) {}
+    constructor (private readonly _extensionUri: vscode.Uri, private readonly context: vscode.ExtensionContext) { this.catalogue = cachedCatalogue(context.globalState); }
 
     /** Initialize the webview and bind sidebar visibility and messages. */
     public resolveWebviewView (webviewView: vscode.WebviewView) {
@@ -117,6 +121,7 @@ export class ModulesView implements vscode.WebviewViewProvider {
             },
         })
 
+        await this.refreshCatalogue();
         await this.updateModules();
 
         let outdatedDependencies: any;
@@ -168,6 +173,12 @@ export class ModulesView implements vscode.WebviewViewProvider {
         })
     }
 
+    /** Serve offline metadata immediately, refreshing through the host only when explicitly requested. */
+    public async refreshCatalogue (force = false) {
+        if (force) { this.catalogue = await fetchCatalogue(this.context.globalState, this.catalogue); }
+        this.postMessage({ command: 'moduleCatalogue', data: { ...this.catalogue, projectVersion: getNuxtVersion() } });
+    }
+
     /** Send an extension-host event to the current webview when available. */
     public postMessage (message: SidebarEvent) {
         if (message.command === 'projectView' || message.command === 'modules') { this.route = message.command; }
@@ -205,6 +216,13 @@ export class ModulesView implements vscode.WebviewViewProvider {
     /** Install first, then edit configuration; report an installed package separately from a failed config edit. */
     private async installModule (module: ModuleMetadata) {
         const name = canonicalPackageName(module);
+        const metadata = this.catalogue.modules.find(item => item.npm === name);
+        if (metadata && !moduleCompatible(metadata, getNuxtVersion())) {
+            this.postMessage({ command: 'moduleInstalled', installed: false, configured: false, cmd: name });
+            vscode.window.showErrorMessage('This module’s compatibility range does not include the selected Nuxt version. Choose a compatible module or update the project.');
+            return;
+        }
+        module = metadata || module;
         const result = await installThenConfigure(
             async () => {
                 const command = await getInstallationCommand(name, moduleIsDevelopment(module));
@@ -306,6 +324,7 @@ export class ModulesView implements vscode.WebviewViewProvider {
                 if (message.command === 'openExternal') { await openExternalLink(message.url); return; }
                 await withProject(this.project || currentProject(), async () => {
                     switch (message.command) {
+                        case 'refreshCatalogue': { await this.refreshCatalogue(true); break; }
                         case 'ready': { this.postMessage({ command: this.route }); if (this.pendingAction) { this.postMessage({ command: this.pendingAction }); } await this.getDependencies(); break; }
                         case 'installModule': { await this.installModule(message.module); break; }
                         case 'openPackageReleaseNotes': { await openPackageReleaseNotes(message.name); break; }

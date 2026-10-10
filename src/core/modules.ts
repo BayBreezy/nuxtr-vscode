@@ -3,12 +3,8 @@ import { parseModule } from 'magicast';
 export interface ModuleMetadata { npm: string; website?: string; 'dependency-type'?: string; dependencyType?: string; runtime?: boolean; }
 export interface InstallationResult { installed: boolean; configured: boolean; error?: unknown; }
 
-/** Accept a canonical package name or catalogue item and reject values that are not package names. */
-export function canonicalPackageName (value: string | ModuleMetadata): string {
-    const name = typeof value === 'string' ? value : value.npm;
-    if (typeof name !== 'string' || !/^(?:@[a-z\d._~-]+\/)?[a-z\d._~-]+$/i.test(name)) { throw new Error('A canonical npm package name is required.'); }
-    return name;
-}
+import { canonicalPackageName } from './packages';
+export { canonicalPackageName } from './packages';
 
 /** Default Nuxt build-time modules to devDependencies, retaining explicitly declared runtime requirements. */
 export function moduleIsDevelopment (module: ModuleMetadata): boolean {
