@@ -19,3 +19,6 @@ PROGRESS.md
 **/*.tsbuildinfo
 scripts/**
 tests/**
+.agents/**
+.claude/**
+skills-lock.json
