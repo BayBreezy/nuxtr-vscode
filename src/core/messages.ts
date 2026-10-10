@@ -1,4 +1,5 @@
 /** Validate sidebar requests before they reach project commands, filesystem edits or external navigation. */
+import type { CataloguePayload } from './catalogue';
 import type { ModuleMetadata } from './modules';
 
 export type SidebarRequest =
@@ -7,10 +8,11 @@ export type SidebarRequest =
     | { command: 'openPackageReleaseNotes'; name: string }
     | { command: 'runAction'; script: string }
     | { command: 'editSnippet' | 'deleteSnippet' | 'editTemplate' | 'deleteTemplate' | 'createFileFromTemplate'; data: string }
-    | { command: 'configureNewSnippet' | 'createEmptyFileTemplate' | 'ready' }
+    | { command: 'configureNewSnippet' | 'createEmptyFileTemplate' | 'ready' | 'refreshCatalogue' }
     | { command: 'openExternal'; url: string };
 export type SidebarEvent = { command: 'projectView' | 'modules' | 'addModule' | 'addLayer' }
     | { command: 'projectViewData' | 'outdatedDependencies' | 'installedModules'; data: unknown }
+    | { command: 'moduleCatalogue'; data: CataloguePayload }
     | { command: 'moduleInstalled'; installed: boolean; configured: boolean; cmd: string };
 
 /** Allow public HTTPS links without embedded credentials or executable URL schemes. */
@@ -48,7 +50,7 @@ export function parseSidebarRequest (value: unknown): SidebarRequest | undefined
         case 'editSnippet': case 'deleteSnippet': case 'editTemplate': case 'deleteTemplate': case 'createFileFromTemplate': {
             return projectResourceName(message.data, message.command.endsWith('Snippet')) ? { command: message.command, data: message.data } : undefined;
         }
-        case 'configureNewSnippet': case 'createEmptyFileTemplate': case 'ready': { return { command: message.command }; }
+        case 'configureNewSnippet': case 'createEmptyFileTemplate': case 'ready': case 'refreshCatalogue': { return { command: message.command }; }
         case 'openExternal': { return safeExternalUrl(message.url) ? { command: 'openExternal', url: message.url } : undefined; }
     }
 }

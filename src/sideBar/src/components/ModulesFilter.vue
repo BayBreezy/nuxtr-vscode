@@ -1,3 +1,4 @@
+<!-- Select integration, Nuxt version, category and module source filters. -->
 <template>
   <div>
     <button
@@ -68,7 +69,7 @@ const props = defineProps({
   },
   nuxtVersions: {
     type: Array,
-    default: () => ["3.0.0", "2.0.0"],
+    default: () => ["Project", "4.x", "3.x", "2.x", "All"],
   },
   categories: {
     type: Array,
@@ -101,24 +102,28 @@ const emit = defineEmits([
 
 const listOpen = ref(props.open || false);
 const integrationType = ref("All Integrations");
-const selectedVersion = ref("3.0.0");
+const selectedVersion = ref("Project");
 const selectedType = ref("Type");
 const selectedCategory = ref("Category");
 
+/** Update and emit the selected catalogue category. */
 const selectCategory = (event: any) => {
   selectedCategory.value = event;
   emit("selectCategory", event);
 };
+/** Update and emit the selected Nuxt compatibility filter. */
 const selectVersion = (event: any) => {
   selectedVersion.value = event;
   emit("selectVersion", event);
 };
 
+/** Update and emit the modules/layers filter. */
 const selectIntegrationType = (event: any) => {
   integrationType.value = event;
   emit("selectIntegrationType", event);
 };
 
+/** Update and emit the official/community source filter. */
 const selectType = (event: any) => {
   selectedType.value = event;
   emit("selectType", event);

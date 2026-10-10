@@ -89,7 +89,7 @@ export async function activateExtension (context: ExtensionContext) {
     }))
 
 
-    const sidebarProvider = new ModulesView(context.extensionUri)
+    const sidebarProvider = new ModulesView(context.extensionUri, context)
     context.subscriptions.push(sidebarProvider);
 
 
@@ -118,7 +118,7 @@ export async function activateExtension (context: ExtensionContext) {
     }
 
 
-    context.subscriptions.push(commands.registerCommand('nuxtr.refreshModules', () => sidebarProvider.updateModules()))
+    context.subscriptions.push(commands.registerCommand('nuxtr.refreshModules', async () => { await sidebarProvider.refreshCatalogue(true); await sidebarProvider.updateModules(); }))
 
     context.subscriptions.push(window.registerWebviewViewProvider('nuxtrSidebar', sidebarProvider))
 

@@ -8,7 +8,7 @@
         <Placeholder v-if="!module.icon" />
         <img
           v-else
-          :src="`https://api.nuxtjs.org/api/ipx/s_80,f_webp/gh/nuxt/modules/main/icons/${module.icon}`"
+          :src="`https://raw.githubusercontent.com/nuxt/modules/main/icons/${module.icon}`"
           :alt="module.name"
           loading="lazy"
         />
@@ -22,13 +22,13 @@
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <div class="flex gap-1">
+            <div class="flex gap-1" v-if="module.stats.stars !== undefined">
               <IconStar class="h-4 w-4" />
               <span class="text-xs font-normal">
                 {{ formatNumber(module.stats.stars) }}
               </span>
             </div>
-            <div class="flex gap-1">
+            <div class="flex gap-1" v-if="module.stats.downloads !== undefined">
               <IconDownloads class="h-4 w-4" />
               <span class="text-xs font-normal">
                 {{ formatNumber(module.stats.downloads) }}
@@ -48,7 +48,7 @@
             :disabled="disabled || installed"
           />
 
-          <a :href="module.github" class="text-xs text-[#00DC82]"> Docs</a>
+          <button @click="openDocumentation" class="text-xs text-[var(--vscode-textLink-foreground)]">Docs</button>
         </div>
       </div>
     </div>
@@ -77,7 +77,8 @@ const disabled = ref(false);
 const buttonText = ref("Install");
 
 /** Format catalogue counts for the compact module card. */
-const formatNumber = (number: number) => {
+const formatNumber = (number: number | undefined) => {
+  if (number === undefined) return "—";
   if (number >= 1000) {
     return (number / 1000).toFixed(0) + "k";
   } else {
@@ -93,6 +94,8 @@ const installModule = () => {
   disabled.value = true;
   buttonText.value = "Installing";
 };
+/** Open the validated documentation URL through the extension host. */
+function openDocumentation () { vscode.postMessage({ command: "openExternal", url: props.module.website || props.module.github }); }
 useHostMessages( (event: any) => {
   const message = event.data;
   switch (message.command) {
