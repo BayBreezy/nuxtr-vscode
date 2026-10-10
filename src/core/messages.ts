@@ -4,6 +4,7 @@ import type { ModuleMetadata } from './modules';
 export type SidebarRequest =
     | { command: 'installModule'; module: ModuleMetadata }
     | { command: 'upgradeModule' | 'removeModule'; module: string }
+    | { command: 'openPackageReleaseNotes'; name: string }
     | { command: 'runAction'; script: string }
     | { command: 'editSnippet' | 'deleteSnippet' | 'editTemplate' | 'deleteTemplate' | 'createFileFromTemplate'; data: string }
     | { command: 'configureNewSnippet' | 'createEmptyFileTemplate' | 'ready' }
@@ -40,6 +41,7 @@ export function parseSidebarRequest (value: unknown): SidebarRequest | undefined
         case 'upgradeModule': case 'removeModule': {
             return typeof message.module === 'string' && packageName.test(message.module) ? { command: message.command, module: message.module } : undefined;
         }
+        case 'openPackageReleaseNotes': { return typeof message.name === 'string' && packageName.test(message.name) ? { command: 'openPackageReleaseNotes', name: message.name } : undefined; }
         case 'runAction': {
             return typeof message.script === 'string' && message.script.length > 0 && message.script.length < 256 ? { command: 'runAction', script: message.script } : undefined;
         }

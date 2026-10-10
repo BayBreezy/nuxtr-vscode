@@ -35,6 +35,7 @@
                     </div>
 
                     <div class="flex items-center gap-2">
+                        <button v-if="outdated?.some((update: any) => update.name === module.name)" class="text-xs text-[var(--vscode-textLink-foreground)]" :aria-label="`Release notes for ${module.name}`" @click="releaseNotes(module.name)">Release notes</button>
                         <button class="hidden cursor-pointer hover:opacity-80 group-hover:block group-hover:font-medium"
                             @click="removeModule(module.name)">
                             <IconTrash class="h-4 w-4" />
@@ -105,6 +106,8 @@ const removeModule = (module: string) => {
         module,
     });
 };
+/** Open verified repository releases, with an npm page fallback. */
+function releaseNotes (name: string) { vscode.postMessage({ command: 'openPackageReleaseNotes', name }); }
 </script>
 
 <style>
