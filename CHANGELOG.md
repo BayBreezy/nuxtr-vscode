@@ -1,5 +1,7 @@
 ## Unreleased — modernization
 
+- Show project structure in the application-folder Explorer menu, and API/server-utility creation on resolved server folders, including custom/nested layouts.
+
 - Raise the minimum VS Code version to 1.141.0; development/CI use Node 24.20.0 and pnpm 12.10.1.
 - Upgrade stable Nuxt schema, Vue/Vite/Router, Tailwind, lint and packaging tooling. Retain TypeScript 6.0.3 until Vue/ESLint integrations support TypeScript 7.
 - Fix empty-window activation, nested/multiple project selection, Nuxt 3/4 and custom directory handling, Bun lockfile/fallback detection, complete process results and pnpm catalog updates.

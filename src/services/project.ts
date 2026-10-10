@@ -3,6 +3,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import { resolve } from 'node:path';
 import { EventEmitter, ExtensionContext, Uri, commands, window, workspace } from 'vscode';
 import { ProjectContext, configAt, containsPath, discoverProjects, managerRoot, projectForResource } from '../core/project';
+import { explorerFolders } from '../core/explorer';
 
 const operation = new AsyncLocalStorage<ProjectContext>();
 let projects: ProjectContext[] = [];
@@ -64,14 +65,35 @@ export async function initializeProjects (context: ExtensionContext, onProjects:
         projects = discoverProjects((workspace.workspaceFolders || []).map(folder => folder.uri.fsPath));
         if (selected && !projects.some(project => project.root === selected?.root)) { selected = undefined; }
         await onProjects(projects.length > 0);
+        await updateExplorerFolders();
     };
     context.subscriptions.push(selectedProjectChanged, commands.registerCommand('nuxtr.selectProject', async (resource?: Uri | string) => {
         await refresh();
         return selectProject(resource, resource === undefined);
-    }), workspace.onDidChangeWorkspaceFolders(refresh));
+    }), workspace.onDidChangeWorkspaceFolders(refresh), workspace.onDidCreateFiles(refresh),
+    workspace.onDidDeleteFiles(refresh), workspace.onDidRenameFiles(refresh));
     const watcher = workspace.createFileSystemWatcher('**/{nuxt.config.ts,nuxt.config.js,nuxt.config.mjs,nuxt.config.cjs,.config/nuxt.ts}');
-    context.subscriptions.push(watcher, watcher.onDidCreate(refresh), watcher.onDidDelete(refresh));
+    context.subscriptions.push(watcher, watcher.onDidCreate(refresh), watcher.onDidDelete(refresh), watcher.onDidChange(refresh));
     await refresh();
+}
+
+/** Publish resolved folders for all projects, refreshing custom-layout menu visibility after Explorer/config changes. */
+async function updateExplorerFolders () {
+    // Keep empty-window startup independent of workspace-only helpers.
+    const helpers = projects.length > 0 ? await import('../utils/nuxt') : undefined;
+    const folders = explorerFolders(projects, project => {
+        if (!helpers) { throw new Error('No project layout is available.'); }
+        return withProject(project, helpers.projectDirectories);
+    });
+    for (const [key, paths] of Object.entries(folders) as [string, string[]][]) {
+        // VS Code uses fsPath for local resources and URI paths for remote resources.
+        const resources = paths.map(path => {
+            const owner = workspace.getWorkspaceFolder(Uri.file(path))
+                || workspace.workspaceFolders?.find(folder => containsPath(folder.uri.fsPath, path));
+            return owner && owner.uri.scheme !== 'file' ? Uri.file(path).path : path;
+        });
+        await commands.executeCommand('setContext', 'nuxtr.' + key, resources);
+    }
 }
 
 /** Keep an explorer command's chosen project stable across prompts, awaits and concurrent commands. */
