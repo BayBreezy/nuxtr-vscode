@@ -478,17 +478,17 @@
           "nuxtr.fileTemplates.components.defaultTemplate": {
             "type": "string",
             "default": "",
-            "description": "Optional components template filename in the selected project\u2019s .vscode directory."
+            "description": "Optional components template filename in the selected project’s .vscode directory."
           },
           "nuxtr.fileTemplates.composables.defaultTemplate": {
             "type": "string",
             "default": "",
-            "description": "Optional composables template filename in the selected project\u2019s .vscode directory."
+            "description": "Optional composables template filename in the selected project’s .vscode directory."
           },
           "nuxtr.fileTemplates.apis.defaultTemplate": {
             "type": "string",
             "default": "",
-            "description": "Optional apis template filename in the selected project\u2019s .vscode directory."
+            "description": "Optional apis template filename in the selected project’s .vscode directory."
           },
           "nuxtr.scaffolding.defaultLanguage": {
             "type": "string",
@@ -1103,7 +1103,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "^4.6.1",
-    "@types/node": "^24.0.0",
+    "@types/node": "^24.19.2",
     "@types/semver": "^7.8.0",
     "@types/vscode": "1.140.0",
     "@vscode/test-electron": "^3.1.0",
