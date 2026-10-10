@@ -45,6 +45,7 @@ async function main () {
             writeFileSync(join(project, 'blank.vue'), '');
             writeFileSync(join(project, 'import-test.vue'), '<script setup>\nimport { vue');
             writeFileSync(join(project, 'asset-test.vue'), '<template><img src="/"></template>');
+            writeFileSync(join(project, 'api-snippet-test.vue'), '<script setup lang="ts">\n\n</script>\n<template>\n\n</template>');
             const serverDirectory = scenario === 'custom' ? 'backend' : 'server';
             mkdirSync(join(project, serverDirectory, 'api'), { recursive: true });
             for (const extension of ['ts', 'js']) { writeFileSync(join(project, serverDirectory, 'api/snippet-test.' + extension), ''); }

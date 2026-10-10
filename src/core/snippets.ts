@@ -1,6 +1,16 @@
 /** Decode packaged VS Code snippets and detect import contexts where boilerplate insertion is inappropriate. */
 import { containsPath } from './project';
-export interface ParsedSnippet { name: string; prefixes: string[]; body: string; description: string; fileTemplate: boolean; }
+import { gte, minVersion } from 'semver';
+export interface ParsedSnippet { name: string; prefixes: string[]; body: string; description: string; fileTemplate: boolean; documentation?: string; minimumNuxtVersion?: string; }
+
+/** Hide newer framework APIs when the project's declared version cannot meet their documented requirement. */
+export function snippetSupportsNuxt (snippet: ParsedSnippet, version?: string): boolean {
+    if (!snippet.minimumNuxtVersion) { return true; }
+    try {
+        const resolved = version && minVersion(version);
+        return Boolean(resolved && gte(resolved, snippet.minimumNuxtVersion));
+    } catch { return false; }
+}
 
 /** Restrict H3 helpers to server JavaScript/TypeScript, using the resolved directory rather than its name. */
 export function isServerSnippetContext (language: string, documentPath: string, serverDirectory: string): boolean {
@@ -14,7 +24,7 @@ export function parseSnippets (value: Record<string, any>): ParsedSnippet[] {
         const prefixes: unknown[] = Array.isArray(snippet.prefix) ? snippet.prefix : [snippet.prefix];
         const body = Array.isArray(snippet.body) ? snippet.body.join('\n') : snippet.body;
         if (!prefixes.every(prefix => typeof prefix === 'string') || typeof body !== 'string') { throw new Error(`Invalid packaged snippet: ${name}`); }
-        result.push({ name, prefixes, body, description: Array.isArray(snippet.description) ? snippet.description.join('\n') : snippet.description || name, fileTemplate: Boolean(snippet.isFileTemplate) });
+        result.push({ name, prefixes, body, description: Array.isArray(snippet.description) ? snippet.description.join('\n') : snippet.description || name, fileTemplate: Boolean(snippet.isFileTemplate), documentation: snippet.documentation, minimumNuxtVersion: snippet.minimumNuxtVersion });
     }
     return result;
 }
