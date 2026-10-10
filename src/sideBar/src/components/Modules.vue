@@ -28,7 +28,7 @@
   </div>
   <div class="mt-5 w-full">
     <ModuleCard
-      v-for="(module, index) in filteredModules"
+      v-for="module in filteredModules"
       :key="module.npm"
       :module="module"
       :installed="isModuleInstalled(module.npm)"

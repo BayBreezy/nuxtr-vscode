@@ -33,7 +33,7 @@ pnpm test:fixtures
 pnpm dev
 ```
 
-`pnpm validate` fails immediately on a failed check. It runs frozen installation, extension/sidebar typechecks, lint, unit regressions, production build/VSIX asset checks, an isolated production-sidebar browser test, VS Code host scenarios and activation from an extracted VSIX. Install the browser once with `pnpm exec playwright install chromium` if Chrome is unavailable. `pnpm test:fixtures` creates isolated Nuxt 3 and 4 projects and verifies generated Tailwind, Pinia, composable, API, middleware and task code through prepare, typecheck and production builds; initial dependency installation needs network access.
+`pnpm validate` fails immediately on a failed check. It runs frozen installation, extension/sidebar typechecks, extension and Vue template/script lint, unit regressions, production build/VSIX asset checks, an isolated production-sidebar browser test, VS Code host scenarios and activation from an extracted VSIX. Install the browser once with `pnpm exec playwright install chromium` if Chrome is unavailable. `pnpm test:fixtures` creates isolated Nuxt 3 and 4 projects and verifies generated Tailwind, Pinia, composable, API, middleware and task code through prepare, typecheck and production builds; initial dependency installation needs network access.
 
 The host suite covers empty/non-Nuxt windows, nested/multiple projects, Nuxt 2, Nuxt 3, compatibility v4, Nuxt 4 modern/legacy layouts and custom directories. Routine tests use offline package-manager and browser-host fixtures. `VSCODE_TEST_VERSION` chooses a downloaded VS Code release; `VSCODE_EXECUTABLE_PATH` overrides its executable. The browser blocks external requests. `PLAYWRIGHT_CHROMIUM_EXECUTABLE` selects an installed Chromium executable.
 
@@ -53,3 +53,5 @@ Keep substantial changes in separate branches from tested `main`. Use Convention
 TypeScript is retained at **6.0.3** while vue-tsc's public compiler entrypoint and typescript-eslint peers do not support TypeScript 7. VS Code API declarations remain **1.140.0**, the latest published matching-generation types available during modernization, while the runtime minimum is 1.141.0. Revisit both with concrete peer/type/host evidence before upgrading.
 
 Linux/Windows CI and macOS smoke jobs are configured for minimum/current stable VS Code. Local results do not replace CI results. Record WSL/remote verification only after it is actually performed; those environments remain pending in local modernization records.
+
+The audit retains one low-severity [esbuild Windows development-server advisory](https://github.com/advisories/GHSA-g7r4-m6w7-qqqr). Its patched esbuild 0.28 release is outside tsup 8.5.1’s supported `^0.27.0` range. Revisit with a supported bundler upgrade and full host/package validation; avoid forcing the pre-1 breaking change through an override.

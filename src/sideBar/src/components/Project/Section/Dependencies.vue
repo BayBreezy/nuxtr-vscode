@@ -52,7 +52,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, PropType, computed } from "vue";
+import { ref, PropType } from "vue";
 import IconChevron from "../../Icons/Chevron.vue";
 import IconUpgrade from "../../Icons/Upgrade.vue";
 import IconTrash from "../../Icons/Trash.vue";

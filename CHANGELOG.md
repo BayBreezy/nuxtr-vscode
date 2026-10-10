@@ -8,6 +8,7 @@
 - Protect generated files, honor indentation, normalize extensions and correct Pinia/server-middleware templates.
 - Add optional component/composable/API templates, JS/TS scaffolds, composable filename prefixes, nested Nitro tasks with explicit experimental opt-in, release-note links and cached/offline module catalogues.
 - Dispose listeners/providers, validate typed sidebar messages, restrict CSP and replace the feedback service with issue/discussion links. Move generated sidebar assets into ignored out/ output.
+- Refresh compatible transitive dependencies and include Vue template/script lint in the merge gate.
 - Add unit regressions, VS Code integration and packaged-extension tests, production-sidebar browser checks, generated Nuxt fixtures and Linux/Windows/macOS CI.
 
 ## v0.2.12
