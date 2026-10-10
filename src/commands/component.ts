@@ -1,6 +1,9 @@
+/** Prompt for and scaffold component files in the selected project’s resolved directories. */
+import { projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode';
 import { createDir, createFile, createSubFolders, generateVueFileBasicTemplate, projectSrcDirectory, showSubFolderQuickPick, } from '../utils';
 
+/** Prompt for a name and create the selected component scaffold. */
 const createComponent = () => {
     window
         .showInputBox({
@@ -10,7 +13,7 @@ const createComponent = () => {
         .then(async (name) => {
             if (!name) { return }
 
-            const componentsDir = `${await projectSrcDirectory()}/components`
+            const componentsDir = projectDirectory('components')
 
             await createDir('components')
 
@@ -25,6 +28,7 @@ const createComponent = () => {
         })
 }
 
+/** Create a file in the Explorer folder supplied by the command. */
 const directCreateComponent = (path: string) => {
     window
         .showInputBox({

@@ -1,5 +1,10 @@
+/** Map command categories to configured application/server directories and file types. */
+import { relative } from 'node:path';
+import { projectDirectory } from './nuxt';
+import { DirectoryKind } from '../core/directories';
 import { hasServerDir } from '../utils';
 
+/** Return the configured folder relative to appDir so existing scaffold callers share one path resolver. */
 export const getCommandType = async (commandType: string) => {
     let type = {
         name: '',
@@ -122,6 +127,10 @@ export const getCommandType = async (commandType: string) => {
         }
     }
 
+    const kind = commandType === 'nuxtUtil' ? 'utils' : commandType;
+    if (['pages', 'layouts', 'components', 'composables', 'plugins', 'middleware', 'store', 'utils'].includes(kind)) {
+        type.path = relative(projectDirectory('app'), projectDirectory(kind as DirectoryKind));
+    }
     return { type };
 
 };

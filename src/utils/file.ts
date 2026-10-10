@@ -1,5 +1,9 @@
+/** Create protected project files and directory/template pickers for the selected Nuxt context. */
 import { existsSync, mkdirSync, readdirSync } from 'node:fs';
 import { TextEncoder } from 'node:util';
+import { dirname, isAbsolute, resolve } from 'node:path';
+import { DirectoryKind } from '../core/directories';
+import { projectDirectories } from './nuxt';
 import { join } from 'pathe';
 import { capitalize, endsWith, replace, split, trim } from 'string-ts';
 import { Uri, window, workspace } from 'vscode';
@@ -9,6 +13,7 @@ import { getCommandType } from './commands';
 import { nuxtrConfiguration, projectRootDirectory, projectSrcDirectory } from '.';
 
 
+/** Prompt for a subfolder and create it under the resolved command directory. */
 const createDirectoryAndFile = async (componentName: any, commandType: string, content: string) => {
 
     const { type } = await getCommandType(commandType);
@@ -25,7 +30,7 @@ const createDirectoryAndFile = async (componentName: any, commandType: string, c
                 const cwd = workspaceFolder?.uri.fsPath;
 
                 if (cwd !== undefined) {
-                    const dir = join(cwd, `${type.path}`);
+                    const dir = resolve(await projectSrcDirectory(), type.path);
                     const directoryPath = join(dir, name);
 
                     if (existsSync(directoryPath)) {
@@ -33,7 +38,7 @@ const createDirectoryAndFile = async (componentName: any, commandType: string, c
                             `Directory ${name} already exists in ./${type.path}/${name}`
                         );
                     } else {
-                        mkdirSync(directoryPath);
+                        await workspace.fs.createDirectory(Uri.file(directoryPath));
 
                         createFile({
                             fileName: componentName,
@@ -46,24 +51,15 @@ const createDirectoryAndFile = async (componentName: any, commandType: string, c
         });
 };
 
+/** Await creation of a logical or relative directory using the resolved Nuxt layout. */
 export const createDir = async (dir: string) => {
-    if (`${await projectSrcDirectory()}` !== `${projectRootDirectory()}` && !existsSync(`${await projectSrcDirectory()}`)) {
-        mkdirSync(`${await projectSrcDirectory()}`);
-    }
-
-    const dirParts = dir.split('/');
-    let currentPath = `${await projectSrcDirectory()}`
-
-
-    for (const part of dirParts) {
-        currentPath = `${currentPath}/${part}`;
-
-        if (!existsSync(currentPath)) {
-            mkdirSync(currentPath);
-        }
-    }
+    const directories = projectDirectories();
+    const configured = directories[dir as DirectoryKind];
+    const target = configured || (isAbsolute(dir) ? dir : resolve(directories.app, dir));
+    await workspace.fs.createDirectory(Uri.file(target));
 };
 
+/** List immediate subfolders for the scaffold picker. */
 export const createSubFolders = async (dir: string, commandType: string) => {
     const subFolders =
         readdirSync(dir, { withFileTypes: true })
@@ -79,6 +75,7 @@ export const createSubFolders = async (dir: string, commandType: string) => {
     return subFolders;
 };
 
+/** Prompt for a destination and create the selected scaffold without overwriting a file. */
 export const showSubFolderQuickPick = async (args: {
     subFolders?: any
     name: string
@@ -124,6 +121,7 @@ export const showSubFolderQuickPick = async (args: {
         });
 };
 
+/** Ensure parents exist and create a new file, preserving existing files. */
 export const createFile = async (args: { fileName: string; content: string; fullPath: string }) => {
     const parentDirectory = Uri.file(args.fullPath);
 
@@ -132,6 +130,7 @@ export const createFile = async (args: { fileName: string; content: string; full
         return;
     }
 
+    await workspace.fs.createDirectory(Uri.file(dirname(args.fullPath)));
     await workspace.fs.writeFile(parentDirectory, new TextEncoder().encode(args.content));
 
     if (nuxtrConfiguration().openItemsAfterCreation) {
@@ -141,6 +140,7 @@ export const createFile = async (args: { fileName: string; content: string; full
     }
 };
 
+/** Save a named Vue template in the selected project’s .vscode directory. */
 export const createVueTemplate = (content: string, type: string) => {
 
     if (!existsSync(`${projectRootDirectory()}/.vscode`)) {
@@ -164,6 +164,8 @@ export const createVueTemplate = (content: string, type: string) => {
 
 };
 
+/** Convert a scaffold name into a PascalCase template identifier. */
 export const normalizeName = (name: string) => split(trim(split(name, '.')[0]), '-').map((value) => capitalize(value)).join('');
 
+/** Remove a supplied suffix before the caller appends the expected extension. */
 export const normalizeFileExtension = (name: string, extension: string) => endsWith(name, extension) ? replace(name, extension, '') : name

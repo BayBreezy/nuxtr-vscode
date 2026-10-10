@@ -1,3 +1,5 @@
+/** Prompt for and scaffold store files in the selected project’s resolved directories. */
+import { projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode'
 import {
     createFile,
@@ -14,6 +16,7 @@ import {
 
 import { vuexContent } from '../templates'
 
+/** Install and configure Pinia when the selected project does not already provide it. */
 async function detectPiniaModule () {
     const moduleName = '@pinia/nuxt'
     const isConfigured = isModuleConfigured(moduleName)
@@ -37,6 +40,7 @@ async function detectPiniaModule () {
 
 }
 
+/** Prompt for a name and create the selected store scaffold. */
 const createStore = () => {
     window
         .showInputBox({
@@ -46,7 +50,7 @@ const createStore = () => {
         .then(async (name: any) => {
             if (!name) { return }
 
-            const filePath = `${await projectSrcDirectory()}/${isNuxtTwo() ? 'store' : 'stores'}/${name}.${isNuxtTwo() ? 'js' : 'ts'}`
+            const filePath = `${projectDirectory(isNuxtTwo() ? 'store' : 'stores')}/${name}.${isNuxtTwo() ? 'js' : 'ts'}`
             await (isNuxtTwo() ? createFile({
                 fileName: name,
                 content: vuexContent,
@@ -61,6 +65,7 @@ const createStore = () => {
         })
 }
 
+/** Create a file in the Explorer folder supplied by the command. */
 const directCreateStore = (path: string) => {
     window
         .showInputBox({

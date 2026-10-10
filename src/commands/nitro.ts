@@ -1,7 +1,10 @@
+/** Prompt for and scaffold nitro files in the selected project’s resolved directories. */
+import { projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode';
 import { nitroDefaultTemplate, nitroPluginTemplate, nitroUtilTemplate } from '../templates';
 import { createDir, createFile, createSubFolders, hasServerDir, normalizeFileExtension, projectSrcDirectory, showSubFolderQuickPick } from '../utils';
 
+/** Prompt for a name and create the selected nitro scaffold. */
 const createNitroAPI = () => {
     window
         .showInputBox({
@@ -28,6 +31,7 @@ const createNitroAPI = () => {
         });
 };
 
+/** Prompt for a name and create the selected nitro scaffold. */
 const createNitroRoute = () => {
     window
         .showInputBox({
@@ -54,6 +58,7 @@ const createNitroRoute = () => {
         });
 }
 
+/** Prompt for a name and create the selected nitro scaffold. */
 const createNitroPlugin = () => {
     window
         .showInputBox({
@@ -80,6 +85,7 @@ const createNitroPlugin = () => {
         });
 }
 
+/** Prompt for a name and create the selected nitro scaffold. */
 const createNitroUtil = () => {
     window
         .showInputBox({
@@ -107,6 +113,7 @@ const createNitroUtil = () => {
 
 }
 
+/** Prompt for a name and create the selected nitro scaffold. */
 const createNitroMiddleware = () => {
     window
         .showInputBox({
@@ -133,6 +140,7 @@ const createNitroMiddleware = () => {
 }
 
 
+/** Create a file in the Explorer folder supplied by the command. */
 const directCreateNitroAPI = (path: string) => {
     window
         .showInputBox({
@@ -154,6 +162,7 @@ const directCreateNitroAPI = (path: string) => {
         })
 }
 
+/** Create a file in the Explorer folder supplied by the command. */
 const directCreateNitroRoute = (path: string) => {
     window
         .showInputBox({

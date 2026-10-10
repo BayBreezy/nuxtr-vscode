@@ -25,6 +25,9 @@ exports.run = async function run () {
         await vscode.window.showTextDocument(document);
         const completions = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', document.uri, new vscode.Position(0, 0));
         assert(completions?.items.some(item => item.label === 'srcDir'), 'Nuxt configuration schema must load in the bundled host');
+        const vue = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(root, 'asset-test.vue'));
+        const assets = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', vue.uri, new vscode.Position(0, vue.getText().indexOf('src="/') + 6));
+        assert(assets?.items.some(item => item.label === 'logo.svg'), 'Public assets must resolve outside Nuxt 4 appDir');
     }
     assert(!extension.packageJSON.contributes.languages.some(x => x.id === 'Log'));
     console.log('NUXTR_SMOKE_PASS: ' + process.env.NUXTR_SCENARIO);

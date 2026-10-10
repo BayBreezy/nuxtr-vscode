@@ -6,7 +6,7 @@ import { ProgressLocation, ThemeIcon, Uri, Webview, env, window, workspace } fro
 import { installDependencies } from '../commands/installDependencies';
 import type { NuxtrConfiguration } from '../types';
 import { currentProject, projectSettingsResource } from '../services/project';
-import { hasSrcDir } from './nuxt';
+import { projectDirectory } from './nuxt';
 import { logger } from './outputChannel';
 
 /** Create a nonce for scripts loaded by the sidebar webview. */
@@ -31,10 +31,8 @@ export const projectRootDirectory = (): string => {
 
 
 /** Resolve the application source directory declared in Nuxt configuration. */
-export const projectSrcDirectory = async (): Promise<string> => {
-    const projectRootDir = projectRootDirectory();
-    const srcDir = await hasSrcDir();
-    return srcDir === '/' ? projectRootDir : projectRootDir + srcDir;
+export const projectSrcDirectory = (): string => {
+    return projectDirectory('app');
 };
 
 /** Open a documentation or repository URL in the user’s browser. */

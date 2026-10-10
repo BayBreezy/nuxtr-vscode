@@ -1,9 +1,13 @@
+/** Prompt for and scaffold composable files in the selected project’s resolved directories. */
+import { projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode'
 import { composableTemplate } from '../templates'
 import { createDir, createFile, createSubFolders, normalizeFileExtension, projectSrcDirectory, showSubFolderQuickPick } from '../utils'
 
+/** Prompt for a name and create the selected composable scaffold. */
 const neglectUsePrefix = (name: string) => name.replace(/^use/i, '')
 
+/** Prompt for a name and create the selected composable scaffold. */
 const createComposable = () => {
     window
         .showInputBox({
@@ -14,7 +18,7 @@ const createComposable = () => {
 
             if (!name) { return }
 
-            const composablesDir = `${await projectSrcDirectory()}/composables`
+            const composablesDir = projectDirectory('composables')
 
             createDir('composables')
 
@@ -30,6 +34,7 @@ const createComposable = () => {
         })
 }
 
+/** Create a file in the Explorer folder supplied by the command. */
 const directCreateComposable = (path: string) => {
     window
         .showInputBox({

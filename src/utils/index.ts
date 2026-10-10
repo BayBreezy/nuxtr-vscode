@@ -1,3 +1,4 @@
+/** Public entrypoints for shared extension helpers and project services. */
 export {
     getNonce,
     getUri,
@@ -52,3 +53,5 @@ export { createConfigWatcher } from './watchers'
 export { isDirectory, languageSelector, openFolder, patternSelector, quickOpenButtons } from './vscode'
 
 export { generatePiniaTemplates, generateVueFileBasicTemplate, generateVueFileTemplate } from './files'
+
+export { projectDirectories, projectDirectory } from './nuxt';
