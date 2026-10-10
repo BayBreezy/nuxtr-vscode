@@ -1,4 +1,5 @@
 /** Present the Vue sidebar and dispatch project dependency, module and template actions. */
+import { openPackageReleaseNotes } from '../services/releases';
 import { SidebarEvent, parseSidebarRequest } from '../core/messages';
 import { ProjectContext } from '../core/project';
 import { currentProject, withProject } from '../services/project';
@@ -307,6 +308,7 @@ export class ModulesView implements vscode.WebviewViewProvider {
                     switch (message.command) {
                         case 'ready': { this.postMessage({ command: this.route }); if (this.pendingAction) { this.postMessage({ command: this.pendingAction }); } await this.getDependencies(); break; }
                         case 'installModule': { await this.installModule(message.module); break; }
+                        case 'openPackageReleaseNotes': { await openPackageReleaseNotes(message.name); break; }
                         case 'runAction': { await this.runAction(message.script); break; }
                         case 'upgradeModule': { await this.upgradeModule(message.module); break; }
                         case 'removeModule': { await this.removeModule(message.module); break; }
