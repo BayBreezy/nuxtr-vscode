@@ -9,3 +9,4 @@ minimumReleaseAgeExclude:
   - '@nuxt/schema@4.6.1'
   - '@vue/language-core@3.3.13'
   - vue-tsc@3.3.13
+  - '@vitejs/plugin-vue@6.0.10'

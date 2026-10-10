@@ -1,6 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Sidebar utility styles and the existing Nuxtr color palette, processed by Tailwind 4. */
+@import "tailwindcss";
+@config "../../tailwind.config.cjs";
 
 /* @layer base {
   @font-face {
