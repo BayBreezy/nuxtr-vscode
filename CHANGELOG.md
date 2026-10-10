@@ -1,5 +1,7 @@
 ## Unreleased — modernization
 
+- Fix sidebar Install clicks failing to send reactive module metadata; show recoverable installation errors and allow configuration to proceed without dismissing the success notification.
+
 - Cover all Nuxt 4 API components, composables and utilities, preserve existing prefixes, link official docs, correct invalid signatures and guard newer APIs by project version.
 
 - Add all 72 documented H3 v1 helpers as server-only Nitro snippets; correct cookie helper arguments and support custom server directories.

@@ -1,4 +1,4 @@
-<!-- Display a module’s metadata and installation status. -->
+<!-- Display module metadata, dispatch installation and show progress or recoverable failures. -->
 <template>
   <div role="article" :aria-label="`Module ${module.npm}`"
     class="hover: relative select-none p-3 px-0 pb-5 text-[var(--vscode-foreground)]"
@@ -51,6 +51,7 @@
 
           <button @click="openDocumentation" class="text-xs text-[var(--vscode-textLink-foreground)]">Docs</button>
         </div>
+        <p v-if="installationError" role="alert" class="mt-2 text-xs text-[var(--vscode-errorForeground)]">{{ installationError }}</p>
       </div>
     </div>
   </div>
@@ -77,6 +78,7 @@ const props = defineProps<{
 const disabled = ref(false);
 const iconFailed = ref(false);
 const buttonText = ref("Install");
+const installationError = ref("");
 
 /** Format catalogue counts for the compact module card. */
 const formatNumber = (number: number | undefined) => {
@@ -89,12 +91,16 @@ const formatNumber = (number: number | undefined) => {
 };
 /** Request installation and show pending status until the host reports its result. */
 const installModule = () => {
-  vscode.postMessage({
-    command: "installModule",
-    module: props.module,
-  });
   disabled.value = true;
   buttonText.value = "Installing";
+  installationError.value = "";
+  try {
+    vscode.postMessage({ command: "installModule", module: props.module });
+  } catch (error) {
+    disabled.value = false;
+    buttonText.value = "Install";
+    installationError.value = `Could not request installation: ${String(error)}`;
+  }
 };
 /** Open the validated documentation URL through the extension host. */
 function openDocumentation () { vscode.postMessage({ command: "openExternal", url: props.module.website || props.module.github }); }
@@ -107,9 +113,11 @@ useHostMessages( (event: any) => {
       }
       if (message.installed === true) {
         buttonText.value = "Installed";
+        installationError.value = message.configured === false ? `Installed, but configuration failed: ${message.error || 'Add the module to nuxt.config manually.'}` : "";
       } else {
         buttonText.value = "Install";
         disabled.value = false;
+        installationError.value = message.error || "Installation did not complete. Please retry.";
       }
       break;
   }

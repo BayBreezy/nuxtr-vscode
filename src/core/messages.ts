@@ -13,7 +13,7 @@ export type SidebarRequest =
 export type SidebarEvent = { command: 'projectView' | 'modules' | 'addModule' | 'addLayer' }
     | { command: 'projectViewData' | 'outdatedDependencies' | 'installedModules'; data: unknown }
     | { command: 'moduleCatalogue'; data: CataloguePayload }
-    | { command: 'moduleInstalled'; installed: boolean; configured: boolean; cmd: string };
+    | { command: 'moduleInstalled'; installed: boolean; configured: boolean; cmd: string; error?: string };
 
 /** Allow public HTTPS links without embedded credentials or executable URL schemes. */
 export function safeExternalUrl (value: unknown): value is string {

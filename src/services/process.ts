@@ -23,8 +23,13 @@ export async function runProjectCommand (notification: CommandNotification): Pro
             const result = await executeCommand(command, controller.signal);
             if (notification.logger || !result.success || result.stderr) { logger.log(result.stdout); logger.log(result.stderr); }
             requireSuccess(result);
-            const choice = await window.showInformationMessage(notification.successMessage, ...(notification.docsURL ? ['Open documentation'] : []));
-            if (choice && notification.docsURL) { const { env, Uri } = await import('vscode'); await env.openExternal(Uri.parse(notification.docsURL)); }
+            if (notification.docsURL) {
+                const choice = await window.showInformationMessage(notification.successMessage, 'Open documentation');
+                if (choice) { const { env, Uri } = await import('vscode'); await env.openExternal(Uri.parse(notification.docsURL)); }
+            } else {
+                // An informational toast must not delay module configuration or the sidebar completion event.
+                void window.showInformationMessage(notification.successMessage);
+            }
             return result.stdout;
         } catch (error) {
             logger.log(String(error));

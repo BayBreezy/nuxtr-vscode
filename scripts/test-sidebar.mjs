@@ -10,9 +10,11 @@ import { createJiti } from 'jiti';
 const jiti = createJiti(import.meta.url);
 const { sidebarHtml } = await jiti.import('../src/core/webview.ts');
 const { normalizeCatalogue } = await jiti.import('../src/core/catalogue.ts');
+const { parseSidebarRequest } = await jiti.import('../src/core/messages.ts');
 const modules = normalizeCatalogue(JSON.parse(await readFile(new URL('../src/content/modules.json', import.meta.url), 'utf8')));
 const nonce = 'fixtureSidebarNonce';
 const bridge = `window.fixtureHost = {
+ installResult: undefined, transportError: false,
  requests: [], emit(message) { window.dispatchEvent(new MessageEvent('message', { data: message })); },
  navigate(command) { this.emit({ command }); },
  ready() {
@@ -22,11 +24,13 @@ const bridge = `window.fixtureHost = {
  this.emit({ command: 'outdatedDependencies', data: [{ name: 'nuxt', current: '4.6.1', latest: '4.6.2' }] });
  }
 }; window.acquireVsCodeApi = () => ({ getState() {}, setState(value) { return value; }, postMessage(message) {
+ if (window.fixtureHost.transportError) throw new Error('Fixture transport unavailable');
+ message = structuredClone(message);
  window.fixtureHost.requests.push(message);
  setTimeout(() => {
   if (message.command === 'ready') window.fixtureHost.ready();
   if (message.command === 'refreshCatalogue') window.fixtureHost.emit({ command: 'moduleCatalogue', data: { modules: ${JSON.stringify(modules)}, source: 'cache', updatedAt: 1791590400000, projectVersion: '4.6.1', error: 'Offline' } });
-  if (message.command === 'installModule') window.fixtureHost.emit({ command: 'moduleInstalled', installed: false, configured: false, cmd: message.module.npm });
+  if (message.command === 'installModule' && window.fixtureHost.installResult) window.fixtureHost.emit({ command: 'moduleInstalled', cmd: message.module.npm, ...window.fixtureHost.installResult });
  }, 10);
 } });`;
 const themes = '<style>body { margin:0; padding:12px; font-family:system-ui; --vscode-foreground:#eee; --vscode-sideBar-background:#181818; --vscode-dropdown-background:#252525; --vscode-dropdown-border:#555; --vscode-textLink-foreground:#4daafc; --vscode-descriptionForeground:#bbb; --vscode-list-hoverBackground:#333; --vscode-list-activeSelectionBackground:#444; background:var(--vscode-sideBar-background); color:var(--vscode-foreground); } body.vscode-light { --vscode-foreground:#222; --vscode-sideBar-background:#fff; --vscode-dropdown-background:#eee; --vscode-dropdown-border:#777; --vscode-textLink-foreground:#005fb8; --vscode-descriptionForeground:#555; --vscode-list-hoverBackground:#eee; --vscode-list-activeSelectionBackground:#ddd; }</style>';
@@ -53,8 +57,32 @@ try {
     await search.fill('eslint');
     const eslint = page.getByRole('article', { name: 'Module @nuxt/eslint', exact: true });
     await eslint.waitFor();
+    await page.evaluate(() => { globalThis.fixtureHost.installResult = { installed: false, configured: false, error: 'Fixture package-manager failure' }; });
     await eslint.getByRole('button', { name: 'Install', exact: true }).click();
     await eslint.getByRole('button', { name: 'Install', exact: true }).waitFor();
+    await search.fill('aos');
+    const aos = page.getByRole('article', { name: 'Module nuxt-aos', exact: true });
+    await aos.waitFor();
+    await aos.getByRole('button', { name: 'Docs', exact: true }).click();
+    await aos.getByRole('button', { name: 'Install', exact: true }).click();
+    await page.waitForFunction(() => globalThis.fixtureHost.requests.some(message => message.command === 'installModule' && message.module.npm === 'nuxt-aos'), undefined, { timeout: 5000 });
+    await aos.getByRole('alert').filter({ hasText: 'Fixture package-manager failure' }).waitFor();
+    await page.evaluate(() => { globalThis.fixtureHost.transportError = true; });
+    await aos.getByRole('button', { name: 'Install', exact: true }).click();
+    await aos.getByRole('alert').filter({ hasText: 'Could not request installation' }).waitFor();
+    assert.equal(await aos.getByRole('button', { name: 'Install', exact: true }).isEnabled(), true);
+    await page.evaluate(() => { globalThis.fixtureHost.transportError = false; globalThis.fixtureHost.installResult = undefined; });
+    await aos.getByRole('button', { name: 'Install', exact: true }).click();
+    const pending = aos.getByRole('button', { name: 'Installing', exact: true });
+    await pending.waitFor();
+    assert.equal(await pending.isDisabled(), true);
+    await page.evaluate(() => globalThis.fixtureHost.emit({ command: 'moduleInstalled', cmd: 'different-module', installed: true, configured: true }));
+    assert.equal(await pending.isVisible(), true, 'Another module result must not settle this installation');
+    await page.evaluate(() => globalThis.fixtureHost.emit({ command: 'moduleInstalled', cmd: 'nuxt-aos', installed: true, configured: false, error: 'Computed Nuxt configuration' }));
+    await aos.getByRole('button', { name: 'Installed', exact: true }).waitFor();
+    await aos.getByRole('alert').filter({ hasText: 'Installed, but configuration failed' }).waitFor();
+    await page.evaluate(() => globalThis.fixtureHost.emit({ command: 'moduleInstalled', cmd: 'nuxt-aos', installed: true, configured: true }));
+    await aos.getByRole('alert').waitFor({ state: 'hidden' });
     await page.getByRole('button', { name: 'Refresh catalogue' }).click();
     await page.getByRole('status').filter({ hasText: 'Offline' }).waitFor();
     await page.getByRole('button', { name: /Filters/ }).click();
@@ -77,8 +105,11 @@ try {
     await page.getByRole('button', { name: 'Share an idea' }).waitFor();
     await page.screenshot({ path: join(tmpdir(), 'nuxtr-sidebar-light.png'), animations: 'disabled' });
     const requests = await page.evaluate(() => globalThis.fixtureHost.requests);
+    assert.ok(requests.every(message => parseSidebarRequest(message)), 'Rendered sidebar requests must pass the actual extension-host validator');
     assert.ok(requests.some(message => message.command === 'installModule' && message.module.npm === '@nuxt/eslint'));
+    assert.ok(requests.some(message => message.command === 'installModule' && message.module.npm === 'nuxt-aos'));
+    assert.ok(requests.some(message => message.command === 'openExternal' && message.url === 'https://github.com/egidiusmengelberg/nuxt-aos'));
     assert.ok(requests.some(message => message.command === 'openPackageReleaseNotes' && message.name === 'nuxt'));
     assert.deepEqual(errors, [], 'Production sidebar must render without browser errors');
-    console.log('PASS: production CSP, offline catalogue, failed install recovery, navigation, keyboard menus, dark/light themes and release-note action');
+    console.log('PASS: production CSP, cloneable module requests, nuxt-aos install/retry/results/docs, offline catalogue, navigation, keyboard menus, themes and release-note action');
 } finally { await browser.close(); await new Promise(done => server.close(done)); }
