@@ -945,6 +945,10 @@
         "command": "nuxtr.createProject",
         "title": "Create new Nuxt Project",
         "category": "Nuxtr"
+      },
+      {
+        "command": "nuxtr.selectProject",
+        "title": "Nuxtr: Select Nuxt Project"
       }
     ],
     "keybindings": [],
@@ -1080,7 +1084,8 @@
     "typecheck:ui": "pnpm --filter ui typecheck",
     "test:extension": "node scripts/test-extension.cjs",
     "validate": "node scripts/validate.cjs",
-    "schema:generate": "node scripts/generate-schema.mjs"
+    "schema:generate": "node scripts/generate-schema.mjs",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@nuxt/schema": "^4.6.1",

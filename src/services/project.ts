@@ -1,0 +1,76 @@
+/** Bridge pure project discovery to VS Code resource selection, settings and workspace lifecycle. */
+import { AsyncLocalStorage } from 'node:async_hooks';
+import { resolve } from 'node:path';
+import { ExtensionContext, Uri, commands, window, workspace } from 'vscode';
+import { ProjectContext, configAt, discoverProjects, managerRoot, projectForResource } from '../core/project';
+
+const operation = new AsyncLocalStorage<ProjectContext>();
+let projects: ProjectContext[] = [];
+let selected: ProjectContext | undefined;
+
+/** Honor the existing monorepo directory setting within the resource's workspace folder. */
+function configuredProject (resource?: Uri): ProjectContext | undefined {
+    const folder = (resource && workspace.getWorkspaceFolder(resource)) || workspace.workspaceFolders?.[0];
+    if (!folder) { return; }
+    const directory = workspace.getConfiguration('nuxtr', folder.uri).get<string>('monorepoMode.DirectoryName');
+    if (!directory) { return; }
+    const root = resolve(folder.uri.fsPath, directory);
+    const configPath = configAt(root);
+    if (!configPath) { throw new Error(`The configured monorepo directory has no Nuxt config: ${root}. Update nuxtr.monorepoMode.DirectoryName.`); }
+    return { root, configPath, workspaceRoot: folder.uri.fsPath, packageManagerRoot: managerRoot(root, folder.uri.fsPath) };
+}
+
+/** Return the resource's project, or the current sidebar preview; commands must call selectProject first. */
+export function currentProject (resource?: Uri): ProjectContext {
+    if (!resource && operation.getStore()) { return operation.getStore()!; }
+    const document = resource || window.activeTextEditor?.document.uri;
+    const result = configuredProject(document) || projectForResource(projects, document?.fsPath) || selected || projects[0];
+    if (!result) { throw new Error('No Nuxt project found. Open a Nuxt folder or run Nuxtr: Create Project.'); }
+    return result;
+}
+
+/** Choose a command project explicitly when resource, active document and existing selection cannot resolve it. */
+export async function selectProject (resource?: Uri | string, forcePicker = false): Promise<ProjectContext | undefined> {
+    const uri = typeof resource === 'string' ? Uri.file(resource) : resource;
+    const document = uri || window.activeTextEditor?.document.uri;
+    let result = configuredProject(document);
+    if (!result && !forcePicker) {
+        result = projectForResource(projects, document?.fsPath) || selected || (projects.length === 1 ? projects[0] : undefined);
+    }
+    if (!result && projects.length > 0) {
+        const item = await window.showQuickPick(projects.map(project => ({ label: workspace.asRelativePath(project.root), description: project.root, project })), { placeHolder: 'Select the Nuxt project for this action' });
+        result = item?.project;
+    }
+    if (result) {
+        selected = result;
+        await commands.executeCommand('setContext', 'nuxtr.selectedProject', result.root);
+    }
+    return result;
+}
+
+/** Refresh discovery when folders/configs change and activate project services after the first project appears. */
+export async function initializeProjects (context: ExtensionContext, onProjects: (available: boolean) => Promise<void>) {
+    /** Rescan configured workspaces and discard selections whose config has disappeared. */
+    const refresh = async () => {
+        projects = discoverProjects((workspace.workspaceFolders || []).map(folder => folder.uri.fsPath));
+        if (selected && !projects.some(project => project.root === selected?.root)) { selected = undefined; }
+        await onProjects(projects.length > 0);
+    };
+    context.subscriptions.push(commands.registerCommand('nuxtr.selectProject', async (resource?: Uri | string) => {
+        await refresh();
+        return selectProject(resource, resource === undefined);
+    }), workspace.onDidChangeWorkspaceFolders(refresh));
+    const watcher = workspace.createFileSystemWatcher('**/{nuxt.config.ts,nuxt.config.js,nuxt.config.mjs,nuxt.config.cjs,.config/nuxt.ts}');
+    context.subscriptions.push(watcher, watcher.onDidCreate(refresh), watcher.onDidDelete(refresh));
+    await refresh();
+}
+
+/** Keep an explorer command's chosen project stable across prompts, awaits and concurrent commands. */
+export function withProject<T> (project: ProjectContext, callback: () => T): T {
+    return operation.run(project, callback);
+}
+
+/** Scope extension settings to the project selected for this operation, with an empty-window fallback. */
+export function projectSettingsResource (): Uri | undefined {
+    try { return Uri.file(currentProject().root); } catch { return window.activeTextEditor?.document.uri; }
+}

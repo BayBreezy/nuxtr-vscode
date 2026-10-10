@@ -1,4 +1,5 @@
 /** Inspect and edit Nuxt project configuration without evaluating application code during activation. */
+import { configAt } from '../core/project';
 import { pathExistsSync } from 'fs-extra';
 import { parseModule } from 'magicast';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
@@ -9,12 +10,7 @@ import { projectRootDirectory } from '.';
 /** Find a supported config file in the active project, returning undefined in empty windows. */
 export const findNuxtConfig = (): string | undefined => {
     if (!workspace.workspaceFolders?.length) { return; }
-    const names = ['nuxt.config.ts', 'nuxt.config.js'];
-
-    for (const name of names) {
-        const path = `${projectRootDirectory()}/${name}`;
-        if (existsSync(path)) { return path; }
-    }
+    try { return configAt(projectRootDirectory()); } catch { return; }
 };
 
 /** Detect installed Nuxt layers by their configuration file. */
@@ -98,15 +94,7 @@ export const removeNuxtModule = (module: any) => {
 /** Check whether the current workspace root contains a Nuxt configuration. */
 export const isNuxtProject = () => {
     if (!workspace.workspaceFolders?.length) { return false; }
-    const names = ['nuxt.config.ts', 'nuxt.config.js'];
-
-    for (const name of names) {
-        const path = `${projectRootDirectory()}/${name}`;
-        const result = pathExistsSync(path);
-        if (result) { return true } else { continue }
-    }
-
-    return false;
+    return Boolean(findNuxtConfig());
 };
 
 /** Read the declared Nuxt version from the active package manifest. */

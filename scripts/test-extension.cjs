@@ -8,17 +8,19 @@ const { join, resolve } = require('node:path');
 async function main () {
     const root = resolve(__dirname, '..');
     const temporary = mkdtempSync(join(process.platform === 'darwin' ? '/tmp' : tmpdir(), 'nx-'));
-    const cases = process.argv.slice(2).length > 0 ? process.argv.slice(2) : ['empty', 'non-nuxt', 'nuxt', 'nuxt4'];
+    const cases = process.argv.slice(2).length > 0 ? process.argv.slice(2) : ['empty', 'non-nuxt', 'nuxt', 'nuxt4', 'nested'];
     const installed = '/Applications/Visual Studio Code.app/Contents/MacOS/Code';
     const executable = process.env.VSCODE_EXECUTABLE_PATH || (existsSync(installed) ? installed : undefined);
     delete process.env.ELECTRON_RUN_AS_NODE;
     for (const scenario of cases) {
         const folder = join(temporary, scenario);
         mkdirSync(folder, { recursive: true });
-        if (scenario.startsWith('nuxt')) {
-            writeFileSync(join(folder, 'package.json'), JSON.stringify({ name: 'smoke', private: true, dependencies: { nuxt: scenario === 'nuxt4' ? '^4.6.1' : '^3.21.11' } }));
-            writeFileSync(join(folder, 'nuxt.config.ts'), 'export default defineNuxtConfig({})\n');
-            writeFileSync(join(folder, '.nuxtrc'), '\n');
+        if (scenario.startsWith('nuxt') || scenario === 'nested') {
+            const project = scenario === 'nested' ? join(folder, 'apps/web') : folder;
+            mkdirSync(project, { recursive: true });
+            writeFileSync(join(project, 'package.json'), JSON.stringify({ name: 'smoke', private: true, dependencies: { nuxt: scenario === 'nuxt4' ? '^4.6.1' : '^3.21.11' } }));
+            writeFileSync(join(project, 'nuxt.config.ts'), 'export default defineNuxtConfig({})\n');
+            writeFileSync(join(project, '.nuxtrc'), '\n');
             writeFileSync(join(folder, 'pnpm-lock.yaml'), 'lockfileVersion: \'9.0\'\n');
         }
         const binaries = join(folder, 'test-bin');
