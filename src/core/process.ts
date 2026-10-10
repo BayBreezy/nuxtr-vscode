@@ -9,7 +9,7 @@ export function executeCommand (command: ProcessCommand, signal?: AbortSignal): 
         let executable = command.executable;
         let args = command.args;
         if (process.platform === 'win32' && ['npm', 'pnpm', 'yarn'].includes(executable)) {
-            if (args.some(arg => /["%!\r\n&|<>^]/.test(arg))) { reject(new Error('Unsupported Windows command argument. Use the terminal to run this specification.')); return; }
+            if (args.some(arg => /["%!\r\n&|<>]/.test(arg))) { reject(new Error('Unsupported Windows command argument. Use the terminal to run this specification.')); return; }
             args = ['/d', '/s', '/c', [executable, ...args.map(arg => `"${arg}"`)].join(' ')];
             executable = 'cmd.exe';
         }
