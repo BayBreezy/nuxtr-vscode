@@ -15,7 +15,7 @@ interface DevtoolsStatusBar {
     command: string;
     tooltip: string;
     text: string;
-    color?: ThemeColor;
+    color?: string | ThemeColor;
 }
 
 export function activateStatusBarIcons (context: ExtensionContext): NuxtrStatusBars {

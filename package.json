@@ -3,9 +3,10 @@
   "displayName": "Nuxtr",
   "description": "An extension for Nuxt offering commands and tools to make your experience more pleasant.",
   "version": "0.2.16",
-  "packageManager": "pnpm@9.11.0",
+  "packageManager": "pnpm@12.10.1",
   "engines": {
-    "vscode": "^1.93.0"
+    "vscode": "^1.141.0",
+    "node": ">=24.20.0"
   },
   "categories": [
     "Programming Languages",
@@ -15,9 +16,6 @@
   "homepage": "https://nuxtr.com",
   "activationEvents": [
     "onStartupFinished"
-  ],
-  "files": [
-    "out"
   ],
   "main": "./out/index.js",
   "icon": "assets/logo.png",
@@ -33,23 +31,6 @@
   ],
   "contributes": {
     "languages": [
-      {
-        "id": "Log",
-        "aliases": [
-          "log"
-        ],
-        "extensions": [
-          ".log"
-        ],
-        "configuration": "./log.langConfiguration.json",
-        "mimetypes": [
-          "log",
-          "text/log",
-          "text/x-log",
-          "text/x-code-output",
-          "x-code-output"
-        ]
-      },
       {
         "id": "nuxtignore",
         "aliases": [
@@ -79,11 +60,6 @@
       }
     },
     "grammars": [
-      {
-        "language": "Log",
-        "scopeName": "code.log",
-        "path": "./syntaxes/log.tmConfiguration.json"
-      },
       {
         "language": "nuxtrc",
         "scopeName": "source.nuxtrc",
@@ -1105,7 +1081,7 @@
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
     "@types/node": "20.16.5",
-    "@types/vscode": "^1.93.0",
+    "@types/vscode": "1.140.0",
     "changelogen": "^0.5.7",
     "eslint": "^9.11.0",
     "eslint-config-unjs": "^0.3.2",
@@ -1129,10 +1105,5 @@
     "pkg-types": "^1.2.0",
     "semver": "^7.6.3",
     "string-ts": "^2.2.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "eslint": "^9.11.0"
-    }
   }
 }

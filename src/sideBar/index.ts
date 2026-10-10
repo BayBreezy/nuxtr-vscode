@@ -207,9 +207,9 @@ export class ModulesView implements vscode.WebviewViewProvider {
     }
 
     private _getHtmlForWebview (webview: vscode.Webview) {
-        const stylesUri = getUri(webview, this._extensionUri, ['src', 'sidebar', 'build', 'assets', 'index.css'])
+        const stylesUri = getUri(webview, this._extensionUri, ['src', 'sideBar', 'build', 'assets', 'index.css'])
         // The JS file from the Vue build output
-        const scriptUri = getUri(webview, this._extensionUri, ['src', 'sidebar', 'build', 'assets', 'index.js'])
+        const scriptUri = getUri(webview, this._extensionUri, ['src', 'sideBar', 'build', 'assets', 'index.js'])
 
         return /*html*/ `
       <!DOCTYPE html>
