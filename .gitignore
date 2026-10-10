@@ -12,3 +12,5 @@ TODOs.md
 
 .eslintcache
 *.tsbuildinfo
+/PLAN.md
+/PROGRESS.md

@@ -12,3 +12,5 @@ vsc-extension-quickstart.md
 **/eslint.config.mjs
 **/*.map
 **/*.ts
+/PLAN.md
+/PROGRESS.md
