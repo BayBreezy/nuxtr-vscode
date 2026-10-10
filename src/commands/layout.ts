@@ -5,7 +5,7 @@ import { createDir, createFile, normalizeFileExtension, projectSrcDirectory } fr
 import { generateVueFileTemplate } from '../utils/files'
 
 
-/** Prompt for a name and create the selected layout scaffold. */
+/** Prompt for a layout name and create its configured template under the resolved Nuxt directory. */
 const createLayout = () => {
     return window
         .showInputBox({

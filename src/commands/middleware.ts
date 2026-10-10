@@ -1,12 +1,11 @@
 /** Prompt for and scaffold middleware files in the selected project’s resolved directories. */
-import { containsPath } from '../core/project';
 import { scaffoldExtension } from '../utils/files';
-import { projectDirectory } from '../utils/nuxt';
+import { directServerScaffold, projectDirectory } from '../utils/nuxt';
 import { window } from 'vscode'
 import { nuxtMiddlewareTemplate, serverMiddlewareTemplate } from '../templates'
 import { createDir, createFile, createSubFolders, hasServerDir, normalizeFileExtension, projectSrcDirectory, showSubFolderQuickPick } from '../utils'
 
-/** Prompt for a name and create the selected middleware scaffold. */
+/** Prompt for a middleware name and create its configured template under the resolved Nuxt directory. */
 const createMiddleware = () => {
     return window
         .showInputBox({
@@ -36,7 +35,8 @@ const createMiddleware = () => {
 
 /** Create a file in the Explorer folder supplied by the command. */
 const directCreateMiddleware = async (path: string) => {
-    const serverDir = await hasServerDir()
+    const server = await directServerScaffold(path);
+    if (server === undefined) { return; }
 
     return window
         .showInputBox({
@@ -50,7 +50,7 @@ const directCreateMiddleware = async (path: string) => {
 
             return createFile({
                 fileName: `${name}${scaffoldExtension()}`,
-                content: containsPath(projectDirectory('server'), filePath) ? serverMiddlewareTemplate : nuxtMiddlewareTemplate,
+                content: server ? serverMiddlewareTemplate : nuxtMiddlewareTemplate,
                 fullPath: filePath,
             })
         })

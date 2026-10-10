@@ -8,28 +8,40 @@ const { join, resolve } = require('node:path');
 async function main () {
     const root = resolve(__dirname, '..');
     const temporary = mkdtempSync(join(process.platform === 'darwin' ? '/tmp' : tmpdir(), 'nx-'));
-    const cases = process.argv.slice(2).length > 0 ? process.argv.slice(2) : ['empty', 'non-nuxt', 'nuxt', 'nuxt4', 'nested'];
+    const cases = process.argv.slice(2).length > 0 ? process.argv.slice(2) : ['empty', 'non-nuxt', 'nuxt', 'nuxt4', 'nested', 'two-projects', 'compat4', 'custom', 'legacy4', 'nuxt2'];
     const vueLanguage = join(temporary, 'vue-language');
     mkdirSync(vueLanguage);
     writeFileSync(join(vueLanguage, 'package.json'), JSON.stringify({ name: 'fixture-vue', publisher: 'tests', version: '1.0.0', engines: { vscode: '*' }, contributes: { languages: [{ id: 'vue', extensions: ['.vue'] }] } }));
     const installed = '/Applications/Visual Studio Code.app/Contents/MacOS/Code';
-    const executable = process.env.VSCODE_EXECUTABLE_PATH || (existsSync(installed) ? installed : undefined);
+    const executable = process.env.VSCODE_EXECUTABLE_PATH || (!process.env.CI && !process.env.VSCODE_TEST_VERSION && existsSync(installed) ? installed : undefined);
     delete process.env.ELECTRON_RUN_AS_NODE;
     for (const scenario of cases) {
         const folder = join(temporary, scenario);
         mkdirSync(folder, { recursive: true });
-        if (scenario.startsWith('nuxt') || scenario === 'nested') {
-            const project = scenario === 'nested' ? join(folder, 'apps/web') : folder;
+        if (!['empty', 'non-nuxt'].includes(scenario)) {
+            const nested = scenario === 'nested' || scenario === 'two-projects';
+            const project = nested ? join(folder, 'apps/web') : folder;
+            const major = ['nuxt4', 'two-projects', 'custom', 'legacy4'].includes(scenario) ? 4 : (scenario === 'nuxt2' ? 2 : 3);
             mkdirSync(project, { recursive: true });
-            writeFileSync(join(project, 'package.json'), JSON.stringify({ name: 'smoke', private: true, dependencies: { nuxt: scenario === 'nuxt4' ? '^4.6.1' : '^3.21.11' } }));
-            writeFileSync(join(project, 'nuxt.config.ts'), 'export default defineNuxtConfig({ modules: [], plugins: [], extends: [] })\n');
+            writeFileSync(join(project, 'package.json'), JSON.stringify({ name: 'smoke', private: true, dependencies: { nuxt: major === 4 ? '^4.6.1' : (major === 2 ? '^2.18.1' : '^3.21.11') } }));
+            const options = scenario === 'compat4' ? 'future: { compatibilityVersion: 4 },' : (scenario === 'custom' ? 'srcDir: "source/", serverDir: "backend/", dir: { public: "static-files/", pages: "screens/" },' : '');
+            writeFileSync(join(project, 'nuxt.config.ts'), `export default defineNuxtConfig({ ${options} modules: [], plugins: [], extends: [] })\n`);
             writeFileSync(join(project, '.nuxtrc'), '\n');
-            if (scenario === 'nuxt4') {
+            if (['nuxt4', 'compat4', 'two-projects'].includes(scenario)) {
                 mkdirSync(join(project, 'app'), { recursive: true });
                 writeFileSync(join(project, 'app/app.vue'), '<template><NuxtPage /></template>');
             }
+            if (scenario === 'legacy4') { writeFileSync(join(project, 'app.vue'), '<template><NuxtPage /></template>'); }
+            if (scenario === 'two-projects') {
+                const other = join(folder, 'apps/admin');
+                mkdirSync(other, { recursive: true });
+                writeFileSync(join(other, 'package.json'), JSON.stringify({ dependencies: { nuxt: '^3.21.11' } }));
+                writeFileSync(join(other, 'nuxt.config.ts'), 'export default defineNuxtConfig({})');
+            }
             mkdirSync(join(project, 'public'), { recursive: true });
-            writeFileSync(join(project, 'public/logo.svg'), '<svg></svg>');
+            const publicDirectory = scenario === 'custom' ? 'static-files' : (scenario === 'nuxt2' ? 'static' : 'public');
+            mkdirSync(join(project, publicDirectory), { recursive: true });
+            writeFileSync(join(project, publicDirectory, 'logo.svg'), '<svg></svg>');
             writeFileSync(join(project, 'blank.vue'), '');
             writeFileSync(join(project, 'import-test.vue'), '<script setup>\nimport { vue');
             writeFileSync(join(project, 'asset-test.vue'), '<template><img src="/"></template>');
@@ -45,7 +57,7 @@ async function main () {
             writeFileSync(executable + '.cmd', '@node "%~dp0pm.cjs" %*\r\n');
         }
         await runTests({
-            extensionDevelopmentPath: [root, vueLanguage],
+            extensionDevelopmentPath: [process.env.NUXTR_EXTENSION_PATH || root, vueLanguage],
             extensionTestsPath: join(root, 'tests/integration/smoke.cjs'),
             vscodeExecutablePath: executable,
             version: process.env.VSCODE_TEST_VERSION || '1.141.0',

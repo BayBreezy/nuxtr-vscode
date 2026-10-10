@@ -11,7 +11,7 @@ exports.run = async function run () {
     await extension.activate();
     const commands = await vscode.commands.getCommands();
     assert(commands.includes('nuxtr.createProject'), 'Project creation must be available');
-    if (process.env.NUXTR_SCENARIO.startsWith('nuxt') || process.env.NUXTR_SCENARIO === 'nested') {
+    if (!['empty', 'non-nuxt'].includes(process.env.NUXTR_SCENARIO)) {
         assert(commands.includes('nuxtr.createComponent'));
         assert(commands.includes('nuxtr.createNitroTask'));
         assert(commands.includes('nuxtr.enableNitroTasks'));
@@ -19,10 +19,16 @@ exports.run = async function run () {
         assert(existsSync(join(extension.extensionPath, build, 'assets/index.js')));
         assert(existsSync(join(extension.extensionPath, build, 'assets/index.css')));
         await vscode.commands.executeCommand('workbench.view.extension.sidebar-view');
-        const root = process.env.NUXTR_SCENARIO === 'nested'
+        const root = ['nested', 'two-projects'].includes(process.env.NUXTR_SCENARIO)
             ? vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, 'apps/web') : vscode.workspace.workspaceFolders[0].uri;
         const project = await vscode.commands.executeCommand('nuxtr.selectProject', root);
         assert.equal(project.root, root.fsPath);
+        if (process.env.NUXTR_SCENARIO === 'two-projects') {
+            const other = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, 'apps/admin');
+            assert.equal((await vscode.commands.executeCommand('nuxtr.selectProject', other)).root, other.fsPath);
+            await assert.rejects(vscode.commands.executeCommand('nuxtr.selectProject', vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, 'unrelated')), /outside/);
+            await vscode.commands.executeCommand('nuxtr.selectProject', root);
+        }
         const config = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(root, 'nuxt.config.ts'));
         const lenses = await vscode.commands.executeCommand('vscode.executeCodeLensProvider', config.uri);
         assert(lenses.some(lens => lens.command?.command === 'nuxtr.createModuleAction'), 'Nuxt config module actions must be available');

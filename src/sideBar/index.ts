@@ -1,4 +1,5 @@
 /** Present the Vue sidebar and dispatch project dependency, module and template actions. */
+import { sidebarHtml } from '../core/webview';
 import { cachedCatalogue, fetchCatalogue } from '../services/catalogue';
 import { CataloguePayload, moduleCompatible } from '../core/catalogue';
 import { getNuxtVersion } from '../utils/nuxt';
@@ -195,22 +196,7 @@ export class ModulesView implements vscode.WebviewViewProvider {
         // The JS file from the Vue build output
         const scriptUri = getUri(webview, this._extensionUri, ['out', 'sidebar', 'assets', 'index.js'])
 
-        return /*html*/ `
-      <!DOCTYPE html>
-      <html lang="en">
-        <head>
-          <meta charset="UTF-8" />
-          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} https: data:; style-src ${webview.cspSource} 'unsafe-inline'; font-src ${webview.cspSource}; script-src 'nonce-${nonce}'; connect-src 'none';">
-          <link rel="stylesheet" type="text/css" href="${stylesUri}">
-          <title>Nuxtr UI</title>
-        </head>
-        <body>
-          <div id="app"></div>
-          <script type="module" nonce="${nonce}" src="${scriptUri}"></script>
-        </body>
-      </html>
-    `
+        return sidebarHtml({ css: String(stylesUri), js: String(scriptUri), source: webview.cspSource, nonce });
     }
 
     /** Install first, then edit configuration; report an installed package separately from a failed config edit. */

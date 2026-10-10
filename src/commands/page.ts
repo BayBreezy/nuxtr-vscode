@@ -4,7 +4,7 @@ import { window } from 'vscode'
 import { createDir, createFile, createSubFolders, normalizeFileExtension, projectSrcDirectory, showSubFolderQuickPick } from '../utils'
 import { generateVueFileTemplate } from '../utils/files'
 
-/** Prompt for a name and create the selected page scaffold. */
+/** Prompt for a page name and create its configured template under the resolved Nuxt directory. */
 const createPage = () => {
     return window
         .showInputBox({

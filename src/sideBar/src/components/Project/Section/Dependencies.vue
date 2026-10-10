@@ -1,13 +1,13 @@
 <!-- Display declared dependencies, versions and host-managed upgrade/removal actions. -->
 <template>
     <div class="my-0.5 flex w-full select-none flex-col items-center text-[var(--vscode-foreground)]">
-        <div class="flex w-full cursor-pointer flex-row items-center" @click="expandSection">
+        <button type="button" :aria-expanded="isSectionOpened" class="flex w-full cursor-pointer flex-row items-center" @click="expandSection">
             <IconChevron class="h-2.5 w-2.5" :listOpen="isSectionOpened" />
             <div class="mx-2.5 flex flex-1 flex-row items-center gap-2 hover:bg-[var(--vscode-list-hoverBackground)]">
                 <IconNPM class="h-4 w-4" />
                 <p class="text-sm font-medium">Dependencies</p>
             </div>
-        </div>
+        </button>
         <Transition name="slide-down-fade">
             <div v-if="isSectionOpened" class="mx-auto mb-2.5 mt-1 w-11/12 px-2" :class="{ showing: isSectionOpened, hidden: !isSectionOpened }">
                 <div v-for="(module, i) in dependencies" :key="i"

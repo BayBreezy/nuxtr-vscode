@@ -2,7 +2,7 @@
 <template>
   <div>
     <button
-      class="relative flex w-full items-center gap-1.5"
+      class="relative flex w-full items-center gap-1.5" :aria-expanded="listOpen"
       @click="listOpen = !listOpen"
     >
       <IconFilter />
@@ -11,8 +11,8 @@
         class="pointer-events-none absolute bottom-0 right-0 top-0 flex items-center"
       >
         <svg
-          class="h-3 w-3 -rotate-90 transition-all duration-300"
-          :class="{ 'rotate-0': listOpen }"
+          class="h-3 w-3 transition-all duration-300"
+          :class="listOpen ? 'rotate-0' : '-rotate-90'"
           viewBox="0 0 11 7"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"

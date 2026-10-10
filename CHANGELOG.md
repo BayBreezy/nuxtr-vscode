@@ -1,3 +1,15 @@
+## Unreleased — modernization
+
+- Raise the minimum VS Code version to 1.141.0; development/CI use Node 24.20.0 and pnpm 12.10.1.
+- Upgrade stable Nuxt schema, Vue/Vite/Router, Tailwind, lint and packaging tooling. Retain TypeScript 6.0.3 until Vue/ESLint integrations support TypeScript 7.
+- Fix empty-window activation, nested/multiple project selection, Nuxt 3/4 and custom directory handling, Bun lockfile/fallback detection, complete process results and pnpm catalog updates.
+- Replace installed-manifest snippet mutation with owned dynamic providers; prevent boilerplate suggestions in imports. Remove the unrelated global log override.
+- Separate module installation/config-edit errors, preserve config comments and default build-time modules to devDependencies. Add explicit Tailwind 4/Vite and legacy Tailwind 3 recipes.
+- Protect generated files, honor indentation, normalize extensions and correct Pinia/server-middleware templates.
+- Add optional component/composable/API templates, JS/TS scaffolds, composable filename prefixes, nested Nitro tasks with explicit experimental opt-in, release-note links and cached/offline module catalogues.
+- Dispose listeners/providers, validate typed sidebar messages, restrict CSP and replace the feedback service with issue/discussion links. Move generated sidebar assets into ignored out/ output.
+- Add unit regressions, VS Code integration and packaged-extension tests, production-sidebar browser checks, generated Nuxt fixtures and Linux/Windows/macOS CI.
+
 ## v0.2.12
 
 [compare changes](https://github.com/nuxtrdev/nuxtr-vscode/compare/0.2.10...v0.2.12)

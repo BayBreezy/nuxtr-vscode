@@ -1,16 +1,17 @@
 <!-- Display a module’s metadata and installation status. -->
 <template>
-  <div
+  <div role="article" :aria-label="`Module ${module.npm}`"
     class="hover: relative select-none p-3 px-0 pb-5 text-[var(--vscode-foreground)]"
   >
     <div class="flex w-full flex-wrap items-center gap-2">
       <div class="mr-2 h-12 w-12 shrink-0">
-        <Placeholder v-if="!module.icon" />
+        <Placeholder v-if="!module.icon || iconFailed" />
         <img
           v-else
           :src="`https://raw.githubusercontent.com/nuxt/modules/main/icons/${module.icon}`"
           :alt="module.name"
           loading="lazy"
+          @error="iconFailed = true"
         />
       </div>
       <div class="flex-1">
@@ -74,6 +75,7 @@ const props = defineProps<{
 
 
 const disabled = ref(false);
+const iconFailed = ref(false);
 const buttonText = ref("Install");
 
 /** Format catalogue counts for the compact module card. */

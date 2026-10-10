@@ -16,3 +16,7 @@ it('recognizes every supported template suffix and rejects partial matches', () 
     expect(templateKind('custom.api-template')).toBe('api');
     expect(templateKind('custom.page-template.bak')).toBeUndefined();
 });
+
+it('avoids repeated use prefixes in exported names for nested files', () => {
+    expect(composableName('account/useCounter.ts')).toBe('Counter');
+});
