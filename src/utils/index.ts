@@ -24,6 +24,7 @@ export {
 } from './nuxt'
 
 export {
+    choosePackageManager,
     dependenciesUpdatesHandler,
     detectPackageManagerByName,
     getInstallationCommand,

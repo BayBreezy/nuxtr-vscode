@@ -1,6 +1,5 @@
 /** Shared VS Code configuration, workspace paths, terminal actions and project-local imports. */
 import { createJiti } from 'jiti';
-import { exec } from 'node:child_process';
 import type { WorkspaceConfiguration } from 'vscode';
 import { ProgressLocation, ThemeIcon, Uri, Webview, env, window, workspace } from 'vscode';
 import { installDependencies } from '../commands/installDependencies';
@@ -51,80 +50,16 @@ export const vscodeConfiguration = (): WorkspaceConfiguration => {
     return workspace.getConfiguration();
 }
 
-/** Reuse a named terminal or create one, then send the requested project command. */
+/** Create a project terminal for each action so a busy or differently scoped terminal never receives another command. */
 export const newTerminal = (terminalName: string, command: string, cwd?: string) => {
-    const existingTerminal = window.terminals.find(terminal => terminal.name === terminalName);
-
-    if (existingTerminal) {
-        existingTerminal.show();
-        existingTerminal.sendText(command);
-    } else {
-        const terminal = window.createTerminal({
-            name: terminalName,
-            cwd,
-            iconPath: new ThemeIcon('nuxt-logo'),
-        });
-
-        terminal.sendText(command);
-        terminal.show();
-    }
+    const terminal = window.createTerminal({ name: terminalName, cwd: cwd || projectRootDirectory(), iconPath: new ThemeIcon('nuxt-logo') });
+    terminal.sendText(command);
+    terminal.show();
+    return terminal;
 };
 
-
-/** Execute a project command with progress and success/failure notifications. */
-export const runCommand = async (args: {
-    command: string
-    message: string
-    successMessage: string
-    errorMessage: string
-    docsURL?: string
-    // logger boolean default false
-    logger?: boolean
-}) => {
-    await window.withProgress(
-        {
-            location: ProgressLocation.Notification,
-            title: args.message,
-            cancellable: false,
-        },
-        () => {
-            return new Promise((resolve, reject) => {
-                const child = exec(
-                    args.command,
-                    { cwd: projectRootDirectory() },
-                    (error: any, stdout: any) => {
-                        if (error) {
-                            reject(error.message);
-                        } else {
-                            if (args.logger) {
-                                logger.log(stdout);
-                                logger.show();
-                            }
-                            resolve(stdout);
-                        }
-                    }
-                );
-
-                child.on('exit', async (code) => {
-                    if (code === 0) {
-                        if (args.docsURL) {
-                            const response = await window.showInformationMessage(args.successMessage, 'Open documentation');
-                            if (response === 'Open documentation') {
-                                openExternalLink(args.docsURL);
-                            }
-                        } else {
-                            window.showInformationMessage(args.successMessage);
-                        }
-
-                    } else {
-                        window.showErrorMessage(args.errorMessage);
-                    }
-                });
-            });
-        }
-    );
-};
-
+/** Execute a project command with complete results, cancellation and success/failure notifications. */
+export { runProjectCommand as runCommand } from '../services/process';
 
 /** Load a package from the Nuxt project and offer installation if it is missing. */
 export async function tryImport (path: string): Promise<undefined | unknown> {
