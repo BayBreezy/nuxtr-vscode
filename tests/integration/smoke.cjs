@@ -43,5 +43,7 @@ exports.run = async function run () {
         assert.equal(readFileSync(manifestPath, 'utf8'), originalManifest, 'Snippet toggles must never rewrite installed manifests');
     }
     assert(!extension.packageJSON.contributes.languages.some(x => x.id === 'Log'));
+    const log = await vscode.workspace.openTextDocument({ language: 'log', content: 'INFO ordinary log output' });
+    assert.equal(log.languageId, 'log', 'Nuxtr must preserve the built-in log language');
     console.log('NUXTR_SMOKE_PASS: ' + process.env.NUXTR_SCENARIO);
 };
