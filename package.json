@@ -1083,13 +1083,14 @@
     "schema:generate": "node scripts/generate-schema.mjs"
   },
   "devDependencies": {
+    "@nuxt/schema": "^4.6.1",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^24.0.0",
     "@types/semver": "^7.8.0",
     "@types/vscode": "1.140.0",
     "@vscode/test-electron": "^3.1.0",
     "@vscode/vsce": "4.0.0",
-    "changelogen": "^0.5.7",
+    "changelogen": "^0.6.2",
     "eslint": "^9.11.0",
     "eslint-config-unjs": "^0.3.2",
     "knip": "^5.30.4",
@@ -1098,8 +1099,7 @@
     "tsup": "^8.5.1",
     "typescript": "^5.6.2",
     "untyped": "^2.0.0",
-    "vitest": "^5.0.3",
-    "@nuxt/schema": "^4.6.1"
+    "vitest": "^5.0.3"
   },
   "dependencies": {
     "destr": "^2.0.5",
