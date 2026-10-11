@@ -135,8 +135,8 @@ export async function activateExtension (context: ExtensionContext) {
 
     // Navigation state is retained until the webview's ready handshake arrives.
     context.subscriptions.push(commands.registerCommand('nuxtr.sidebarModulesView', async () => {
-        await commands.executeCommand('workbench.view.extension.sidebar-view');
         sidebarProvider.postMessage({ command: 'modules' });
+        await commands.executeCommand('workbench.view.extension.sidebar-view');
         await sidebarProvider.updateModules();
     }));
     for (const [command, action] of [['nuxtr.createModuleAction', 'addModule'], ['nuxtr.createLayer', 'addLayer']] as const) {
@@ -144,8 +144,9 @@ export async function activateExtension (context: ExtensionContext) {
             const project = await selectProject(resource);
             if (!project) { return; }
             await withProject(project, async () => {
-                await commands.executeCommand('nuxtr.sidebarModulesView');
                 sidebarProvider.postMessage({ command: action });
+                await commands.executeCommand('workbench.view.extension.sidebar-view');
+                await sidebarProvider.updateModules();
             });
         }));
     }

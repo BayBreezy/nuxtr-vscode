@@ -43,6 +43,7 @@ export class ModulesView implements vscode.WebviewViewProvider {
     private catalogue: CataloguePayload;
     private route: 'projectView' | 'modules' = 'projectView';
     private pendingAction?: 'addModule' | 'addLayer';
+    private webviewReady = false;
 
     /** Keep the extension URI for packaged asset resolution. */
     constructor (private readonly _extensionUri: vscode.Uri, private readonly context: vscode.ExtensionContext) { this.catalogue = cachedCatalogue(context.globalState); }
@@ -57,27 +58,22 @@ export class ModulesView implements vscode.WebviewViewProvider {
             localResourceRoots: [this._extensionUri],
         }
 
-        webviewView.webview.html = this._getHtmlForWebview(webviewView.webview)
         this._setWebviewMessageListener(webviewView.webview)
-
-        // in case the user reload the window while opening the extension tab
-        if (webviewView.visible) {
-            this.goToProjectView()
-        }
+        webviewView.webview.html = this._getHtmlForWebview(webviewView.webview)
 
         this.listeners.push(webviewView.onDidChangeVisibility(() => {
-            if (webviewView.visible) {
-                this.goToProjectView()
+            // Revealing the sidebar must preserve the page requested by its opening command.
+            if (webviewView.visible && this.webviewReady) {
+                this.refreshProjectData()
             }
         }), webviewView.onDidDispose(() => this.dispose()));
     }
 
     /** Dispose listeners whenever the sidebar is replaced or the extension shuts down. */
-    public dispose () { for (const listener of this.listeners.splice(0)) { listener.dispose(); } this._view = undefined; }
+    public dispose () { for (const listener of this.listeners.splice(0)) { listener.dispose(); } this._view = undefined; this.webviewReady = false; }
 
-    /** Request sidebar project navigation and refresh its project data. */
-    public goToProjectView () {
-        this.postMessage({ command: 'projectView' })
+    /** Refresh visible sidebar data without replacing the requested route or integration filter. */
+    private refreshProjectData () {
         void this.getDependencies().catch(error => { vscode.window.showErrorMessage(String(error)); })
     }
 
@@ -180,13 +176,32 @@ export class ModulesView implements vscode.WebviewViewProvider {
         this.postMessage({ command: 'moduleCatalogue', data: { ...this.catalogue, projectVersion: getNuxtVersion() } });
     }
 
-    /** Send an extension-host event to the current webview when available. */
+    /** Retain navigation until the webview is ready, then deliver events to its mounted page. */
     public postMessage (message: SidebarEvent) {
-        if (message.command === 'projectView' || message.command === 'modules') { this.route = message.command; }
-        if (message.command === 'addModule' || message.command === 'addLayer') { this.pendingAction = message.command; }
-        if (this._view) {
+        if (message.command === 'projectView' || message.command === 'modules') {
+            this.project = currentProject();
+            this.route = message.command;
+            this.pendingAction = undefined;
+            this.sendNavigation();
+            return;
+        }
+        if (message.command === 'addModule' || message.command === 'addLayer') {
+            this.project = currentProject();
+            this.route = 'modules';
+            this.pendingAction = message.command;
+            this.sendNavigation();
+            return;
+        }
+        if (this._view && this.webviewReady) {
             this._view.webview.postMessage(message)
         }
+    }
+
+    /** Replay page and filter together, including when Vue mounts the destination page. */
+    private sendNavigation () {
+        if (!this._view || !this.webviewReady) { return; }
+        this._view.webview.postMessage({ command: this.route });
+        if (this.pendingAction) { this._view.webview.postMessage({ command: this.pendingAction }); }
     }
 
     /** Render the sidebar shell with local JS/CSS asset URIs. */
@@ -313,7 +328,7 @@ export class ModulesView implements vscode.WebviewViewProvider {
                 await withProject(this.project || currentProject(), async () => {
                     switch (message.command) {
                         case 'refreshCatalogue': { await this.refreshCatalogue(true); break; }
-                        case 'ready': { this.postMessage({ command: this.route }); if (this.pendingAction) { this.postMessage({ command: this.pendingAction }); } await this.getDependencies(); break; }
+                        case 'ready': { this.webviewReady = true; this.sendNavigation(); await this.getDependencies(); break; }
                         case 'installModule': { await this.installModule(message.module); break; }
                         case 'openPackageReleaseNotes': { await openPackageReleaseNotes(message.name); break; }
                         case 'runAction': { await this.runAction(message.script); break; }
