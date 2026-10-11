@@ -7,4 +7,3 @@ export function canonicalPackageName (value: string | ModuleMetadata): string {
     if (typeof name !== 'string' || name.length > 214 || name.split('/').some(part => part === '.' || part === '..') || name.startsWith('-') || !/^(?:@[a-z\d._~-]+\/)?[a-z\d._~-]+$/i.test(name)) { throw new Error('A canonical npm package name is required.'); }
     return name;
 }
-
