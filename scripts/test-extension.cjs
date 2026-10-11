@@ -43,6 +43,7 @@ async function main () {
             mkdirSync(join(project, publicDirectory), { recursive: true });
             writeFileSync(join(project, publicDirectory, 'logo.svg'), '<svg></svg>');
             writeFileSync(join(project, 'blank.vue'), '');
+            writeFileSync(join(project, 'wrap-test.vue'), '<script setup>const text = "value"</script>\n<template>\n  <span>first</span>\n  <span>second</span>\n</template>');
             writeFileSync(join(project, 'import-test.vue'), '<script setup>\nimport { vue');
             writeFileSync(join(project, 'asset-test.vue'), '<template><img src="/"></template>');
             writeFileSync(join(project, 'api-snippet-test.vue'), '<script setup lang="ts">\n\n</script>\n<template>\n\n</template>');

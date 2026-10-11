@@ -1,5 +1,7 @@
 ## Unreleased — modernization
 
+- Wrap Vue template selections with Nuxt built-ins, preserving indentation and offering one undo for multiple selections (#134).
+
 - Add read-only project health checks with a diagnostics preview and explicit clipboard copy.
 
 - Complete Pinia and other successful command configuration while documentation notifications remain open; keep delayed documentation actions functional and separate browser errors from installation results.

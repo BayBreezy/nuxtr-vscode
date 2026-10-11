@@ -23,6 +23,7 @@ vi.mock('vscode', () => ({
     },
     window: { showErrorMessage: host.error, registerWebviewViewProvider: vi.fn() },
 }));
+vi.mock('../../src/commands/wrapComponent', () => ({ wrapWithNuxtComponent: vi.fn() }));
 vi.mock('../../src/commands/projectHealth', () => ({ projectHealthCheck: vi.fn() }));
 vi.mock('../../src/commands', () => ({ default: { createNitroTask: host.createTask, directCreateNitroTask: host.directTask } }));
 vi.mock('../../src/services/project', () => ({ selectProject: host.selectProject, withProject: (_project: unknown, action: () => any) => action() }));
