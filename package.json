@@ -99,6 +99,18 @@
     "menus": {
       "commandPalette": [
         {
+          "command": "nuxtr.createNitroTask",
+          "when": "nuxtr.isNuxtProject"
+        },
+        {
+          "command": "nuxtr.directCreateNitroTask",
+          "when": "false"
+        },
+        {
+          "command": "nuxtr.enableNitroTasks",
+          "when": "nuxtr.isNuxtProject"
+        },
+        {
           "command": "nuxtr.projectStructure",
           "when": "nuxtr.isNuxtProject"
         },

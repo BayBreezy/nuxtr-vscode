@@ -14,7 +14,11 @@ exports.run = async function run () {
     if (!['empty', 'non-nuxt'].includes(process.env.NUXTR_SCENARIO)) {
         assert(commands.includes('nuxtr.createComponent'));
         assert(commands.includes('nuxtr.createNitroTask'));
+        assert(commands.includes('nuxtr.directCreateNitroTask'));
         assert(commands.includes('nuxtr.enableNitroTasks'));
+        const palette = extension.packageJSON.contributes.menus.commandPalette;
+        assert.equal(palette.find(menu => menu.command === 'nuxtr.directCreateNitroTask')?.when, 'false', 'Explorer-only task command must stay hidden in the palette');
+        assert.equal(palette.find(menu => menu.command === 'nuxtr.createNitroTask')?.when, 'nuxtr.isNuxtProject', 'Palette task command must be scoped to Nuxt projects');
         const explorer = extension.packageJSON.contributes.menus['explorer/context'];
         assert(explorer.find(menu => menu.command === 'nuxtr.projectStructure').when.includes('resourcePath in nuxtr.applicationDirectories'));
         for (const command of ['nuxtr.createNitroAPI', 'nuxtr.createNitroUtil']) {

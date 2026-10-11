@@ -12,7 +12,9 @@ import { activateConfigWatchers, filesWatcher } from './watchers';
 
 const extensionCommands = [
     { command: 'nuxtr.createNitroTask', function: () => nuxtrCommands.createNitroTask() },
-    { command: 'nuxtr.directCreateNitroTask', function: (resource: Uri) => nuxtrCommands.directCreateNitroTask(resource.fsPath) },
+    // Keybindings and command history can invoke the Explorer action without a folder URI.
+    { command: 'nuxtr.directCreateNitroTask', function: (resource?: Uri) => resource
+        ? nuxtrCommands.directCreateNitroTask(resource.fsPath) : nuxtrCommands.createNitroTask() },
     { command: 'nuxtr.enableNitroTasks', function: nuxtrCommands.enableNitroTasks },
     { command: 'nuxtr.createPage', function: nuxtrCommands.createPage },
     { command: 'nuxtr.createComponent', function: nuxtrCommands.createComponent },
