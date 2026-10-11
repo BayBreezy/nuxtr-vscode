@@ -12,6 +12,19 @@ export function parsePackageCommand (value: string, cwd: string): ProcessCommand
     return { executable, args, cwd };
 }
 
+/** Deliver optional documentation actions without delaying installation or changing its successful result. */
+function notifySuccess (notification: CommandNotification): void {
+    void Promise.resolve().then(() => window.showInformationMessage(notification.successMessage, ...(notification.docsURL ? ['Open documentation'] : [])))
+        .then(async choice => {
+            if (choice !== 'Open documentation' || !notification.docsURL) { return; }
+            const { env, Uri } = await import('vscode');
+            if (!await env.openExternal(Uri.parse(notification.docsURL))) { throw new Error('The browser did not open the documentation link.'); }
+        }).catch(error => {
+            logger.log(`Command completed; documentation notification failed: ${String(error)}`);
+            void window.showErrorMessage(`Could not open command documentation: ${String(error)}`);
+        });
+}
+
 /** Execute a trusted project action, resolving only after success and rejecting installation failure before config edits. */
 export async function runProjectCommand (notification: CommandNotification): Promise<string> {
     if (!workspace.isTrusted) { throw new Error('Trust this workspace before running project commands.'); }
@@ -23,13 +36,7 @@ export async function runProjectCommand (notification: CommandNotification): Pro
             const result = await executeCommand(command, controller.signal);
             if (notification.logger || !result.success || result.stderr) { logger.log(result.stdout); logger.log(result.stderr); }
             requireSuccess(result);
-            if (notification.docsURL) {
-                const choice = await window.showInformationMessage(notification.successMessage, 'Open documentation');
-                if (choice) { const { env, Uri } = await import('vscode'); await env.openExternal(Uri.parse(notification.docsURL)); }
-            } else {
-                // An informational toast must not delay module configuration or the sidebar completion event.
-                void window.showInformationMessage(notification.successMessage);
-            }
+            notifySuccess(notification);
             return result.stdout;
         } catch (error) {
             logger.log(String(error));
