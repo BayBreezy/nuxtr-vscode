@@ -65,7 +65,7 @@ try {
     const search = page.getByPlaceholder('Search Integrations...');
     await search.waitFor();
     await page.getByRole('button', { name: /Filters/ }).click();
-    await page.getByRole('button', { name: 'Modules', exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Integration type Modules', exact: true }).waitFor();
     await page.getByRole('button', { name: /Filters/ }).click();
     for (const action of ['addLayer', 'addModule']) {
         await page.evaluate(() => globalThis.fixtureHost.navigate('projectView'));
@@ -73,7 +73,7 @@ try {
         await page.evaluate(command => globalThis.fixtureHost.navigate(command), action);
         await search.waitFor();
         await page.getByRole('button', { name: /Filters/ }).click();
-        await page.getByRole('button', { name: action === 'addLayer' ? 'Layers' : 'Modules', exact: true }).waitFor();
+        await page.getByRole('button', { name: 'Integration type ' + (action === 'addLayer' ? 'Layers' : 'Modules'), exact: true }).waitFor();
         await page.getByRole('button', { name: /Filters/ }).click();
     }
     await search.fill('eslint');
@@ -108,14 +108,14 @@ try {
     await page.getByRole('button', { name: 'Refresh catalogue' }).click();
     await page.getByRole('status').filter({ hasText: 'Offline' }).waitFor();
     await page.getByRole('button', { name: /Filters/ }).click();
-    const versions = page.getByRole('button', { name: 'Project', exact: true });
+    const versions = page.getByRole('button', { name: 'Nuxt version Project', exact: true });
     await versions.focus();
     await page.keyboard.press('Enter');
     await page.getByRole('button', { name: '4.x', exact: true }).waitFor();
     await page.keyboard.press('Escape');
     assert.equal(await page.getByRole('button', { name: '4.x', exact: true }).isVisible(), false);
     await page.getByRole('button', { name: /Filters/ }).click();
-    await page.getByRole('button', { name: 'Project', exact: true }).waitFor({ state: 'hidden' });
+    await page.getByRole('button', { name: 'Nuxt version Project', exact: true }).waitFor({ state: 'hidden' });
     await page.screenshot({ path: join(evidenceDirectory, 'nuxtr-sidebar-dark.png'), animations: 'disabled' });
     await page.evaluate(() => { document.body.className = 'vscode-light'; globalThis.fixtureHost.navigate('projectView'); });
     const dependencies = page.getByRole('button', { name: 'Dependencies', exact: true });

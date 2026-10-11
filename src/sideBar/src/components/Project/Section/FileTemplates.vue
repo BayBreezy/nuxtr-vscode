@@ -38,7 +38,7 @@
                     </div>
                 </div>
                 <div @click.prevent="createEmptyFileTemplate"
-                    class="group relative flex w-full items-center justify-between hover:bg-[var(--vscode-list-hoverBackground)]">
+                    class="group relative flex w-full cursor-pointer items-center justify-between hover:bg-[var(--vscode-list-hoverBackground)]">
                     <div class="flex cursor-pointer flex-row items-center">
                         <IconAdd class="h-3 w-3" />
                         <p class="ml-2 text-sm">Create new Template</p>
