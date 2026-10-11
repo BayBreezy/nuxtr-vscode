@@ -1,5 +1,7 @@
 ## Unreleased — modernization
 
+- Add consistent 12px padding around both sidebar views, keeping controls and module cards inset at narrow widths.
+
 - Complete canonical module names in Nuxt configuration from cached/offline catalogue data, with tuple, duplicate and compatibility handling (#144).
 
 - Add opt-in terminal reuse for confirmed idle Nuxtr terminals in the same project and working directory (#154).

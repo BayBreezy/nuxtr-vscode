@@ -1,6 +1,8 @@
-<!-- Route extension-host navigation events to the sidebar pages. -->
+<!-- Apply shared sidebar spacing and route extension-host navigation events to its pages. -->
 <template>
-  <router-view></router-view>
+  <main class="sidebar-content">
+    <router-view></router-view>
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -24,3 +26,11 @@ useHostMessages( (event: any) => {
   }
 });
 </script>
+
+<style scoped>
+/* Keep both sidebar pages inset without relying on the host's default body padding. */
+.sidebar-content {
+  min-width: 0;
+  padding: 12px;
+}
+</style>
