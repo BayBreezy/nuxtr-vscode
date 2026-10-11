@@ -4,6 +4,17 @@ const { existsSync, readFileSync } = require('node:fs');
 const { join } = require('node:path');
 const vscode = require('vscode');
 
+/** Wait for the document mirror to receive an editor operation after its command promise settles. */
+function documentText (document, expected) {
+    if (document.getText() === expected) { return Promise.resolve(); }
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => { listener.dispose(); reject(new Error('Editor change did not reach the document mirror.')); }, 5000);
+        const listener = vscode.workspace.onDidChangeTextDocument(event => {
+            if (event.document === document && document.getText() === expected) { clearTimeout(timer); listener.dispose(); resolve(); }
+        });
+    });
+}
+
 /** Verify public activation and, for a Nuxt workspace, project commands and packaged sidebar assets. */
 exports.run = async function run () {
     const extension = vscode.extensions.all.find(e => e.packageJSON.name === 'nuxtr-vscode');
@@ -40,6 +51,9 @@ exports.run = async function run () {
             await assert.rejects(vscode.commands.executeCommand('nuxtr.selectProject', vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, 'unrelated')), /outside/);
             await vscode.commands.executeCommand('nuxtr.selectProject', root);
         }
+        // Finish the sidebar activation check before exercising editor focus and Undo.
+        await vscode.commands.executeCommand('workbench.action.closeSidebar');
+        await vscode.commands.executeCommand('workbench.action.closePanel');
         const wrappedDocument = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(root, 'wrap-test.vue'));
         const wrappingEditor = await vscode.window.showTextDocument(wrappedDocument);
         const wrappingOriginal = wrappedDocument.getText();
@@ -50,7 +64,10 @@ exports.run = async function run () {
         assert.equal(await vscode.commands.executeCommand('nuxtr.wrapWithNuxtComponent', 'ClientOnly'), true);
         assert(wrappedDocument.getText().includes('<ClientOnly><span>first</span></ClientOnly>'));
         assert(wrappedDocument.getText().includes('<ClientOnly><span>second</span></ClientOnly>'));
-        await vscode.commands.executeCommand('undo');
+        await vscode.commands.executeCommand('workbench.action.focusActiveEditorGroup');
+        // Undo routing requires editor focus; wait for the resulting document event before asserting.
+        await vscode.commands.executeCommand('default:undo');
+        await documentText(wrappedDocument, wrappingOriginal);
         assert.equal(wrappedDocument.getText(), wrappingOriginal, 'Multiple wrappers must undo in one step');
         const health = await vscode.commands.executeCommand('nuxtr.projectHealthCheck', root);
         assert(health.includes('Generated types'));
@@ -59,6 +76,19 @@ exports.run = async function run () {
         const config = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(root, 'nuxt.config.ts'));
         const lenses = await vscode.commands.executeCommand('vscode.executeCodeLensProvider', config.uri);
         assert(lenses.some(lens => lens.command?.command === 'nuxtr.createModuleAction'), 'Nuxt config module actions must be available');
+        const configEditor = await vscode.window.showTextDocument(config);
+        const originalConfig = config.getText();
+        const moduleSource = originalConfig.replace('modules: []', 'modules: ["@nuxt/"]');
+        const completeRange = new vscode.Range(config.positionAt(0), config.positionAt(config.getText().length));
+        await configEditor.edit(builder => builder.replace(completeRange, moduleSource));
+        const modulePosition = config.positionAt(moduleSource.indexOf('@nuxt/') + 6);
+        const moduleItems = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', config.uri, modulePosition);
+        assert.equal(moduleItems.items.some(item => item.label === '@nuxt/eslint'), process.env.NUXTR_SCENARIO !== 'nuxt2', 'Module completion must load offline data and filter incompatible Nuxt generations');
+        await vscode.workspace.getConfiguration('nuxtr').update('intellisense.nuxtModules', false, vscode.ConfigurationTarget.Workspace);
+        const modulesOff = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', config.uri, modulePosition);
+        assert(!modulesOff.items.some(item => item.label === '@nuxt/eslint'), 'Module completion toggles must apply immediately');
+        await vscode.workspace.getConfiguration('nuxtr').update('intellisense.nuxtModules', true, vscode.ConfigurationTarget.Workspace);
+        await configEditor.edit(builder => builder.replace(new vscode.Range(config.positionAt(0), config.positionAt(config.getText().length)), originalConfig));
         const document = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(root, '.nuxtrc'));
         await vscode.window.showTextDocument(document);
         const completions = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', document.uri, new vscode.Position(0, 0));

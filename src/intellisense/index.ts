@@ -1,5 +1,6 @@
 /** Own completion providers and apply IntelliSense settings immediately when configuration changes. */
 import { Disposable, ExtensionContext, languages, workspace } from 'vscode';
+import { NuxtModulesCompletionProvider } from './completionProviders/modules';
 import { NuxtIgnoreCompletionProvider } from './completionProviders/nuxtIgnore';
 import { CustomCompletionProvider } from './completionProviders/nuxtRC';
 import { NuxtPagesCompletionProvider, PublicDirCompletionProvider } from './completionProviders/vueFiles';
@@ -13,6 +14,7 @@ export function activateIntellisense (context: ExtensionContext) {
     const refresh = () => {
         for (const provider of providers.splice(0)) { provider.dispose(); }
         const settings = nuxtrConfiguration().intellisense;
+        providers.push(languages.registerCompletionItemProvider([{ language: 'typescript' }, { language: 'javascript' }], new NuxtModulesCompletionProvider(context.globalState), '"', '\'', '@', '/'));
         if (settings.nuxtignore) { providers.push(languages.registerCompletionItemProvider(patternSelector('**/.nuxtignore'), new NuxtIgnoreCompletionProvider(), '/')); }
         if (settings.vueFiles) {
             providers.push(languages.registerCompletionItemProvider(languageSelector('vue'), new NuxtPagesCompletionProvider(), '/', '\\'),

@@ -50,6 +50,7 @@ export interface NuxtrConfiguration {
         };
     };
     intellisense: {
+        nuxtModules: boolean;
         vueFiles: boolean;
         nuxtignore: boolean;
         nuxtrc: boolean;
