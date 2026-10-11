@@ -296,3 +296,7 @@ Run **Nuxtr: Project Health Check and Diagnostics** in a Nuxt project to check i
 ### Wrap selections in Nuxt components
 
 Select content in an HTML Vue template and run **Nuxtr: Wrap Selection in Nuxt Component**, or use the editor context menu. Choose `ClientOnly`, `NuxtLink`, `DevOnly`, `NuxtLayout` or `NuxtErrorBoundary`. Multiple selections are supported and undo together. Multiline content uses the editor indentation and line endings; `NuxtLink` starts with `to="/"`, which you can edit afterward. Script, style, external-template and Pug blocks are excluded.
+
+### Optional terminal reuse
+
+Enable `nuxtr.terminal.reuse` to reuse idle terminals created by Nuxtr for the same project and working directory. The default is `false`. Reuse requires [VS Code shell integration](https://code.visualstudio.com/docs/terminal/shell-integration), an observed finished command and a matching reported directory. Busy dev servers, unrelated terminals, terminals whose directory changed, and shells without reliable integration always get a new terminal. Nuxtr never stops a running task to reuse its terminal.

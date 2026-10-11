@@ -1,5 +1,7 @@
 ## Unreleased — modernization
 
+- Add opt-in terminal reuse for confirmed idle Nuxtr terminals in the same project and working directory (#154).
+
 - Wrap Vue template selections with Nuxt built-ins, preserving indentation and offering one undo for multiple selections (#134).
 
 - Add read-only project health checks with a diagnostics preview and explicit clipboard copy.

@@ -14,6 +14,7 @@ export interface ConfigurationProperty {
 }
 
 export interface NuxtrConfiguration {
+    terminal: { reuse: boolean };
     scaffolding: { defaultLanguage: 'ts' | 'js'; composableUsePrefix: boolean };
     fileTemplates: { components: { defaultTemplate: string }; composables: { defaultTemplate: string }; apis: { defaultTemplate: string } };
     openItemsAfterCreation: boolean;
