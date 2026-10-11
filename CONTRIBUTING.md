@@ -54,4 +54,6 @@ TypeScript is retained at **6.0.3** while vue-tsc's public compiler entrypoint a
 
 Linux/Windows CI and macOS smoke jobs are configured for minimum/current stable VS Code. Local results do not replace CI results. Record WSL/remote verification only after it is actually performed; those environments remain pending in local modernization records.
 
+Use `node scripts/ci-validate.cjs` to retain complete step logs, sidebar screenshots, the exact tested VSIX and its commit/checksum report under ignored `.artifacts/release-confidence/`. Use `node scripts/ci-validate.cjs fixtures` for generated-project evidence. CI retains separate artifacts for all six OS/editor targets, including failed-run diagnostics, and supports manual dispatch. Follow the [release validation checklist and mandatory WSL handoff](./docs/RELEASE_VALIDATION.md); local passing checks alone do not authorize a release.
+
 The audit retains one low-severity [esbuild Windows development-server advisory](https://github.com/advisories/GHSA-g7r4-m6w7-qqqr). Its patched esbuild 0.28 release is outside tsup 8.5.1’s supported `^0.27.0` range. Revisit with a supported bundler upgrade and full host/package validation; avoid forcing the pre-1 breaking change through an override.
