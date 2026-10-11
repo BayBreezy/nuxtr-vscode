@@ -648,6 +648,12 @@
             "type": "boolean",
             "default": true,
             "description": "Allow .nuxtrc intellisense"
+          },
+          "nuxtr.intellisense.nuxtModules": {
+            "type": "boolean",
+            "default": true,
+            "description": "Complete Nuxt module package names in nuxt.config modules arrays using the shared cached/offline catalogue.",
+            "scope": "resource"
           }
         }
       },

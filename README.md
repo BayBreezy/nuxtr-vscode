@@ -300,3 +300,7 @@ Select content in an HTML Vue template and run **Nuxtr: Wrap Selection in Nuxt C
 ### Optional terminal reuse
 
 Enable `nuxtr.terminal.reuse` to reuse idle terminals created by Nuxtr for the same project and working directory. The default is `false`. Reuse requires [VS Code shell integration](https://code.visualstudio.com/docs/terminal/shell-integration), an observed finished command and a matching reported directory. Busy dev servers, unrelated terminals, terminals whose directory changed, and shells without reliable integration always get a new terminal. Nuxtr never stops a running task to reuse its terminal.
+
+### Module-name completion
+
+Type a package name inside the `modules` array of `nuxt.config.ts`/`.js`/`.mjs`/`.cjs` or `.config/nuxt.ts`, then use completion (Ctrl+Space). Nuxtr suggests canonical names from the sidebar cache or bundled offline catalogue, including tuple-style module entries. Already configured modules, layers and known incompatible Nuxt ranges are excluded. Completion never fetches from the network; **Refresh Modules** updates the shared cache. Disable it with `nuxtr.intellisense.nuxtModules`.

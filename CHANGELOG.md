@@ -1,5 +1,7 @@
 ## Unreleased — modernization
 
+- Complete canonical module names in Nuxt configuration from cached/offline catalogue data, with tuple, duplicate and compatibility handling (#144).
+
 - Add opt-in terminal reuse for confirmed idle Nuxtr terminals in the same project and working directory (#154).
 
 - Wrap Vue template selections with Nuxt built-ins, preserving indentation and offering one undo for multiple selections (#134).
