@@ -292,3 +292,7 @@ Nuxtr relies on the following projects/repositories:
 ### Project health and diagnostics
 
 Run **Nuxtr: Project Health Check and Diagnostics** in a Nuxt project to check installed Nuxt, generated types, package-manager availability, catalog references and directory resolution. The command opens a read-only inspection report in the editor. Review it, then use **Copy diagnostics** in the notification to copy it. Nothing is sent automatically; source files, environment values and absolute paths are omitted. Warnings include suggested next steps and never modify your project.
+
+### Wrap selections in Nuxt components
+
+Select content in an HTML Vue template and run **Nuxtr: Wrap Selection in Nuxt Component**, or use the editor context menu. Choose `ClientOnly`, `NuxtLink`, `DevOnly`, `NuxtLayout` or `NuxtErrorBoundary`. Multiple selections are supported and undo together. Multiline content uses the editor indentation and line endings; `NuxtLink` starts with `to="/"`, which you can edit afterward. Script, style, external-template and Pug blocks are excluded.

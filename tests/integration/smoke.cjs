@@ -40,6 +40,18 @@ exports.run = async function run () {
             await assert.rejects(vscode.commands.executeCommand('nuxtr.selectProject', vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, 'unrelated')), /outside/);
             await vscode.commands.executeCommand('nuxtr.selectProject', root);
         }
+        const wrappedDocument = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(root, 'wrap-test.vue'));
+        const wrappingEditor = await vscode.window.showTextDocument(wrappedDocument);
+        const wrappingOriginal = wrappedDocument.getText();
+        wrappingEditor.selections = ['first', 'second'].map(text => {
+            const start = wrappingOriginal.indexOf('<span>' + text);
+            return new vscode.Selection(wrappedDocument.positionAt(start), wrappedDocument.positionAt(start + ('<span>' + text + '</span>').length));
+        });
+        assert.equal(await vscode.commands.executeCommand('nuxtr.wrapWithNuxtComponent', 'ClientOnly'), true);
+        assert(wrappedDocument.getText().includes('<ClientOnly><span>first</span></ClientOnly>'));
+        assert(wrappedDocument.getText().includes('<ClientOnly><span>second</span></ClientOnly>'));
+        await vscode.commands.executeCommand('undo');
+        assert.equal(wrappedDocument.getText(), wrappingOriginal, 'Multiple wrappers must undo in one step');
         const health = await vscode.commands.executeCommand('nuxtr.projectHealthCheck', root);
         assert(health.includes('Generated types'));
         assert(!health.includes(root.fsPath), 'Shareable diagnostics must omit absolute paths');
