@@ -26,6 +26,7 @@ vi.mock('../../src/services/project', () => ({ currentProject: () => ({ root: '/
 vi.mock('../../src/utils/nuxt', () => ({ getNuxtVersion: () => '4.6.1' }));
 vi.mock('../../src/utils/dependency', () => ({ choosePackageManager: vi.fn() }));
 vi.mock('../../src/utils', () => ({ getNonce: () => 'testNonce', getUri: () => '/assets/test', logger: { log: vi.fn() }, updateDependencies: vi.fn() }));
+vi.mock('../../src/commands/projectHealth', () => ({ projectHealthCheck: vi.fn() }));
 vi.mock('../../src/commands', () => ({ default: {} }));
 vi.mock('../../src/snippets', () => ({ activateSnippets: vi.fn() }));
 vi.mock('../../src/codelens', () => ({ default: { activateCodelenses: vi.fn() } }));

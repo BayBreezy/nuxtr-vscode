@@ -1,6 +1,7 @@
 /** Register Nuxt project commands, sidebar, status indicators and owned project watchers. */
 import { ExtensionContext, Uri, commands, window } from 'vscode';
 import { activateSnippets } from './snippets';
+import { projectHealthCheck } from './commands/projectHealth';
 import { selectProject, withProject } from './services/project';
 import nuxtrCommands from './commands'
 import { ModulesView } from './sideBar'
@@ -11,6 +12,7 @@ import { activateIntellisense } from './intellisense'
 import { activateConfigWatchers, filesWatcher } from './watchers';
 
 const extensionCommands = [
+    { command: 'nuxtr.projectHealthCheck', function: projectHealthCheck },
     { command: 'nuxtr.createNitroTask', function: () => nuxtrCommands.createNitroTask() },
     // Keybindings and command history can invoke the Explorer action without a folder URI.
     { command: 'nuxtr.directCreateNitroTask', function: (resource?: Uri) => resource
