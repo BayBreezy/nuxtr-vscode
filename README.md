@@ -19,101 +19,116 @@
 
 <br>
 
-### Compatibility and project selection
-
-Requires VS Code **1.141.0 or newer**. Nuxt 3 and 4 are actively supported; existing Nuxt 2 workflows are retained where practical. The installed extension uses VS Code's runtime; contributors use Node 24.20.0 and pnpm 12.10.1.
-
-Run **Nuxtr: Select Project** for nested or multiple applications. Explorer actions and completion providers use the resource's project. The existing monorepo directory setting remains an explicit override. Application directories follow Nuxt's configured layout and legacy-layout detection; server/public/shared paths are resolved separately. Computed or inherited directories require an explicit Explorer destination when safe automatic resolution is unavailable.
-
-### Scaffolding and dependency updates
-
-- Store reusable page, layout, component, composable and API templates in the project's `.vscode` directory. Existing page/layout template settings continue to work; `nuxtr.fileTemplates.*.defaultTemplate` selects optional additional defaults.
-- `nuxtr.scaffolding.defaultLanguage` selects `ts` (default) or `js`. `nuxtr.scaffolding.composableUsePrefix` optionally generates filenames such as `useCounter.ts`; the default remains unchanged. Vue scripts use the existing Vue language setting.
-- **Nuxtr: Create Nitro Task** generates nested names such as `db:migrate` inside the configured `server/tasks` directory. **Enable Experimental Nitro Tasks** is an explicit opt-in. Helpers match the installed Nitro generation. See [Nitro 2 tasks](https://v2.nitro.build/guide/tasks) and [current Nitro tasks](https://nitro.build/docs/tasks).
-- Tailwind configuration offers Tailwind 4 with its Vite plugin, or the legacy Tailwind 3 Nuxt module recipe. Existing files and conflicting integrations are protected.
-- pnpm default/named catalogs resolve from workspace YAML, and updates preserve catalog references. Modules default to development dependencies unless their metadata requires runtime installation.
-- The module sidebar includes the official ESLint module, a bundled offline snapshot and cached successful refreshes. **Refresh catalogue** fetches the [official modules feed](https://github.com/nuxt/modules#using-cdn) through the extension host. Dependency updates provide verified GitHub release links with an npm page fallback.
-
-Nuxt/Nitro snippet toggles apply immediately. Suggestions avoid import statements and never modify the installed extension manifest. Ordinary log files retain their existing language support.
-
 ### What does Nuxtr do?
 
+- [Getting Started](#getting-started)
 - [Project Creation](#project-creation)
 - [Directory and File Creation](#directory-and-file-creation)
-- [Dependencies management](#dependencies-management)
+- [Dependencies Management](#dependencies-management)
 - [IntelliSense and Auto Completion](#intellisense-and-auto-completion)
 - [Nuxi CLI Integration](#nuxi-cli-integration)
 - [Nuxt, Nitro and Custom Snippets](#nuxt-nitro-and-custom-snippets)
-- [Personalized Vue File Templates](#personalized-vue-file-templates)
+- [Personalized File Templates](#personalized-file-templates)
 - [Support for `srcDir`, `serverDir`, and Monorepo Projects](#support-for-srcdir-serverdir-and-monorepo-projects)
 - [Execute Scripts with Ease](#execute-scripts-with-ease)
+- [Optional Terminal Reuse](#optional-terminal-reuse)
 - [Toggle Nuxt Devtools from your status bar](#toggle-nuxt-devtools-from-your-status-bar)
 - [Search and install Nuxt integrations](#search-and-install-nuxt-integrations)
-- [Install \& Configure CSS frameworks and Linters](#install--configure-css-frameworks-and-linters)
+- [Install & Configure UI Libraries, CSS frameworks, and Linters](#install--configure-ui-libraries-css-frameworks-and-linters)
+- [Project Health and Diagnostics](#project-health-and-diagnostics)
+- [Wrap Selections in Nuxt Components](#wrap-selections-in-nuxt-components)
+- [Contributing](#contributing)
+
+<br>
+<br>
+
+### Getting Started
+
+Nuxtr requires **VS Code 1.141.0 or newer**. Nuxt 3 and 4 are actively supported; existing Nuxt 2 workflows are retained where practical.
+
+1. Install [Nuxtr from the VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=Nuxtr.nuxtr-vscode).
+2. Open your Nuxt project and select the Nuxtr icon in the Activity Bar to access project tools and modules.
+3. Open the Command Palette (`Cmd+Shift+P` on macOS or `Ctrl+Shift+P` on Windows/Linux) and search for **Nuxtr**.
+
+Working in a monorepo? Run **Nuxtr: Select Nuxt Project** to choose an application. To try changes from this checkout, follow the [local development instructions](#contributing) to build and install a VSIX.
 
 <br>
 <br>
 
 ### Project Creation
 
-Using `Nuxtr: Create Nuxt project` command, you can create a new Nuxt project with a few steps. You can choose a project starter from [Nuxt Startes](https://nuxt.new) or you can add your own project started:
+Run **Nuxtr: Create new Nuxt Project** to create a project, including from an empty VS Code window. Choose a starter from [Nuxt Starters](https://nuxt.new), or add your own in `settings.json`:
 
-```JSON
-"nuxtr.projectTemplates": [
-    {
-        "name": "Vitesse",
-        "description": " Vitesse for Nuxt 3 🏔💚⚡️ ",
-        "repoURL": "https://github.com/antfu/vitesse-nuxt3",
-        "branch": "main", // Optional
-    },
-],
+```jsonc
+{
+    "nuxtr.projectTemplates": [
+        {
+            "name": "Vitesse",
+            "description": "Vitesse for Nuxt 3 🏔💚⚡️",
+            "repoURL": "https://github.com/antfu/vitesse-nuxt3",
+            "branch": "main" // Optional
+        }
+    ]
+}
 ```
 
 <br>
 
 ### Directory and File Creation
 
-Effortlessly generate all essential directories and files for your Nuxt project right from within VSCode. Utilize the command palette  or context menus to swiftly create Vue/TypeScript files, as well as special files like [`.nuxtignore`](https://nuxt.com/docs/guide/directory-structure/nuxtignore), [`.nuxtrc`](https://nuxt.com/docs/api/configuration/nuxt-config), and [`app.config.ts`](https://nuxt.com/docs/guide/directory-structure/app-config).
+Generate pages, layouts, components, composables, plugins, middleware, utilities, stores and Nitro server files from the Command Palette or Explorer context menu. Nuxtr also creates special files such as [`.nuxtignore`](https://nuxt.com/docs/guide/directory-structure/nuxtignore), [`.nuxtrc`](https://nuxt.com/docs/api/configuration/nuxt-config), and [`app.config.ts`](https://nuxt.com/docs/guide/directory-structure/app-config).
 
-To initiate any creation action, simply prepend it with the prefix **`Nuxtr: Create...`** and **`Nuxtr: Nuxt project structure...`** command for creating the entire project structure.
+Search for **Nuxtr: Create...** to create individual files. To scaffold directories, right-click the project root or application folder (`app/` in a modern Nuxt 4 layout) and select **Nuxtr: Nuxt project structure...**. Right-click the resolved server folder to create a Nitro API or utility under `server/api` or `server/utils`.
 
-Right-click the Nuxt application folder (`app/` in a modern Nuxt 4 layout) or a project root and select **Nuxtr: Nuxt project structure...**. Right-click the resolved server folder to select **Create new Nitro API** or **Create new Nitro Utility**; these create files under `server/api` and `server/utils`. Custom `srcDir`/`serverDir` settings and nested projects are respected.
+File creation respects your editor's indentation settings and protects existing files. Customize Vue files and choose a Pinia store style in `settings.json`:
 
-Customize Vue file templates with these settings:
-
-```JSON
-"nuxtr.vueFiles.template.defaultLanguage": "html",
-"nuxtr.vueFiles.firstTag": "template",
-"nuxtr.vueFiles.script.type": "setup",
-"nuxtr.vueFiles.script.defaultLanguage": "ts",
-"nuxtr.vueFiles.style.addStyleTag": true,
-"nuxtr.vueFiles.style.alwaysScoped": true,
-"nuxtr.vueFiles.style.defaultLanguage": "scss",
-"nuxtr.piniaFiles.defaultTemplate": "options"
+```json
+{
+    "nuxtr.vueFiles.template.defaultLanguage": "html",
+    "nuxtr.vueFiles.firstTag": "template",
+    "nuxtr.vueFiles.script.type": "setup",
+    "nuxtr.vueFiles.script.defaultLanguage": "ts",
+    "nuxtr.vueFiles.style.addStyleTag": true,
+    "nuxtr.vueFiles.style.alwaysScoped": true,
+    "nuxtr.vueFiles.style.defaultLanguage": "scss",
+    "nuxtr.piniaFiles.defaultTemplate": "options",
+    "nuxtr.openItemsAfterCreation": true
+}
 ```
 
-Additionally, you can choose to automatically open the newly created file with:
+**JavaScript or TypeScript**: Non-Vue scaffolds use TypeScript by default. You can choose JavaScript and optionally generate `use`-prefixed composable filenames, such as `useCounter.js`:
 
-```JSON
-"nuxtr.openItemsAfterCreation": true
+```json
+{
+    "nuxtr.scaffolding.defaultLanguage": "js",
+    "nuxtr.scaffolding.composableUsePrefix": true
+}
 ```
+
+**Pinia stores**: Creating a store in Nuxt 3 or 4 also installs `@pinia/nuxt` when needed and adds it to your Nuxt configuration. Choose `setup` or `options` with `nuxtr.piniaFiles.defaultTemplate`.
+
+**Nitro tasks**: Run **Nuxtr: Create Nitro Task** to create a task in the resolved `server/tasks` directory. Nested names such as `db:migrate` create nested files. Use **Nuxtr: Enable Experimental Nitro Tasks** when you want to enable tasks explicitly. See the [Nitro 2 task guide](https://v2.nitro.build/guide/tasks); task templates follow the installed Nitro generation.
 
 ![Nuxt Project Creation](https://raw.githubusercontent.com/nuxtrdev/nuxtr-vscode/main/.github/media/file_creation.gif)
 
 <br>
 <br>
 
-### Dependencies management
+### Dependencies Management
 
-**Package Manager Detection**: Your package manager is automatically detected if a lock file exists. Alternatively, you can specify which package manager to use with the following setting:
+**Package Manager Detection**: Nuxtr detects npm, pnpm, Yarn and Bun from the project's lockfile, including both `bun.lock` and `bun.lockb`. Set a fallback for projects without a lockfile:
 
-```JSON
-"nuxtr.defaultPackageManager": "pnpm"
+```json
+{
+    "nuxtr.defaultPackageManager": "pnpm"
+}
 ```
 
-**Dependencies Management**: Within the sidebar of the project view, easily remove, upgrade, or downgrade your dependencies by selecting the desired version.
+**Dependencies Management**: Use the sidebar's Project view to remove dependencies, upgrade them, or select a specific version. pnpm default and named workspace catalogs are supported, and updating a catalog-managed dependency preserves its catalog reference.
 
-**Status Bar Icon**: Keep an eye on your outdated dependencies directly from the status bar. With just a few clicks, you can initiate the update process.
+**Release Notes**: Dependency updates include release-note links when repository metadata is available, with an npm package-page fallback.
+
+**Status Bar Icon**: Check outdated dependencies and start an update directly from the status bar.
 
 <br>
 
@@ -124,14 +139,29 @@ Additionally, you can choose to automatically open the newly created file with:
 
 ### IntelliSense and Auto Completion
 
-Nuxtr offers robust IntelliSense capabilities tailored for Vue files. This includes dynamic path completion for [NuxtLinks](https://nuxt.com/docs/api/components/nuxt-link#internal-routing) within the pages directory, and seamless handling of media resources from the [public or static directories](https://nuxt.com/docs/guide/directory-structure/public), depending on your Nuxt version. Additionally, enjoy IntelliSense support for critical configuration files like [`.nuxtignore`](https://nuxt.com/docs/guide/directory-structure/nuxtignore) and [`.nuxtrc`](https://nuxt.com/docs/guide/directory-structure/nuxtrc), ensuring precise guidance and efficient coding.
+Nuxtr adds path completion for [NuxtLink](https://nuxt.com/docs/api/components/nuxt-link#internal-routing) destinations and media in your public or static directory, plus completion for [`.nuxtignore`](https://nuxt.com/docs/guide/directory-structure/nuxtignore) and [`.nuxtrc`](https://nuxt.com/docs/guide/directory-structure/nuxtrc).
 
-You can enable/disable IntelliSense from the settings:
+**Module-name completion**: Inside the `modules` array of your Nuxt configuration, start typing a package name and trigger suggestions with `Ctrl+Space`. Completion uses the cached or bundled module catalogue, works offline, and supports tuple-style entries. Already configured modules, layers and known incompatible Nuxt versions are excluded. Use **Refresh catalogue** in the sidebar to update the shared catalogue.
 
-```JSON
- "nuxtr.intellisense.nuxtrc": true,
- "nuxtr.intellisense.vueFiles": true,
- "nuxtr.intellisense.nuxtignore": true,
+```ts
+export default defineNuxtConfig({
+    modules: [
+        '@nuxt/' // Trigger completion here
+    ]
+})
+```
+
+Module completion supports literal arrays in `nuxt.config.ts`, `.js`, `.mjs`, `.cjs` and `.config/nuxt.ts` using a default export. Computed configurations and CommonJS assignments need manual entries.
+
+You can enable or disable each provider in `settings.json`:
+
+```json
+{
+    "nuxtr.intellisense.nuxtrc": true,
+    "nuxtr.intellisense.vueFiles": true,
+    "nuxtr.intellisense.nuxtignore": true,
+    "nuxtr.intellisense.nuxtModules": true
+}
 ```
 
 ![IntelliSense](https://raw.githubusercontent.com/nuxtrdev/nuxtr-vscode/main/.github/media/intellisense.gif)
@@ -141,10 +171,9 @@ You can enable/disable IntelliSense from the settings:
 
 ### Nuxi CLI Integration
 
-The Nuxt CLI, also known as [Nuxi](https://github.com/nuxt/cli), is an essential tool for every Nuxt developer. Seamlessly integrated into Nuxtr, it enables you to effortlessly execute Nuxi commands directly from the command palette. Under the `Nuxtr: Run` prefix, you'll discover a curated set of frequently used commands at your fingertips. Additionally, you can access the complete list of Nuxi commands through the `Nuxtr: Nuxi CLI` command.
+Run the project's installed [Nuxt CLI](https://github.com/nuxt/cli) directly from VS Code. Search for **Nuxtr: Run Nuxi** in the Command Palette for common actions such as dev, build, generate and info, or select **Nuxtr: Nuxi CLI** to browse the supported commands.
 
-While using the CLI directly from your terminal is perfectly viable, Nuxtr's integration enhances your development experience, especially when working with multiple terminals. It introduces a structured approach to your terminal environment, categorizing commands based on their scope. This not only streamlines your workflow but also simplifies the process of adding modules, eliminating the need to recall or search for exact names.
-
+Commands run in a terminal for the selected project using its package manager. You can also add modules through the CLI without having to remember their exact package names.
 
 ![Nuxi CLI](https://raw.githubusercontent.com/nuxtrdev/nuxtr-vscode/main/.github/media/nuxi.gif)
 
@@ -153,43 +182,51 @@ While using the CLI directly from your terminal is perfectly viable, Nuxtr's int
 
 ### Nuxt, Nitro and Custom Snippets
 
-**Nuxt Snippets** cover all 16 components, 33 composables and 31 utilities in the [Nuxt 4 API index](https://nuxt.com/docs/4.x/api), plus related payload/link helpers. Type a component name (or its existing alias), composable or utility name and select the Nuxtr suggestion. Definitions include official documentation links, editable defaults and version/module/experimental requirements. See the [complete snippet catalogue and local testing guide](./docs/SNIPPETS.md).
+**Nuxt Snippets**: Type a component, composable or utility name and select the Nuxtr suggestion. The catalogue covers the Nuxt 4 API components, composables and utilities, including editable placeholders and documentation links. Use `vueBase` or `vueBaseLayout` for boilerplate based on your Vue file settings.
 
-Starting 0.2.10, you can inject a dynamic snippet based on your Nuxtr Vue files configuration with `vueBase` or `vueBaseLayout`.
+**Nitro and H3 Snippets**: In JavaScript or TypeScript files under the resolved server directory, type a server helper such as `readBody`, or its explicit alias `h3ReadBody`. H3 v1 snippets include request, response and advanced utilities for Nitro 2 projects, including custom server directories. See the [Nitro documentation](https://v2.nitro.build) and [H3 v1 documentation](https://v1.h3.dev).
 
-Nuxt Snippets are enabled by default. You can toggle them on or off using this setting:
+Both snippet groups are enabled by default. Changes to their settings apply immediately:
 
-```JSON
- "nuxtr.snippets.nuxt": true
+```json
+{
+    "nuxtr.snippets.nuxt": true,
+    "nuxtr.snippets.nitro": true
+}
 ```
 
-**Nitro Snippets**: Nitro powers the Nuxt Server Engine. For detailed information, refer to the [Nitro Docs](https://nitro.unjs.io).
+**Custom Snippets**: Create, edit and delete your own snippets from the sidebar.
 
-H3 v1 snippets cover all 72 request, response and advanced helpers from the [request](https://v1.h3.dev/utils/request), [response](https://v1.h3.dev/utils/response) and [advanced](https://v1.h3.dev/utils/advanced) references. In JavaScript/TypeScript files under the resolved server directory, type a helper name such as `readBody`, or its explicit alias such as `h3ReadBody`, and select the Nuxtr suggestion. Custom `serverDir` settings are supported. H3 helpers assume the Nitro 2/H3 v1 auto-imports used by Nuxt 3 and 4. Session snippets require a private `runtimeConfig.sessionPassword` secret of at least 32 characters; edit the highlighted values for your application.
-
-Nitro Snippets are enabled by default. You can customize their behavior using this setting:
-
-```JSON
- "nuxtr.snippets.nitro": true
-```
-
-**Custom Snippets**: Easily manage your custom snippets directly from the sidebar. Create, edit, or delete your snippets with ease. Stay tuned for more updates on this feature!
+See the [complete snippet catalogue](./docs/SNIPPETS.md) for prefixes, supported contexts, API requirements and local testing instructions.
 
 <br>
 <br>
 
-### Personalized Vue File Templates
+### Personalized File Templates
 
-In order to offer users greater flexibility in tailoring their Vue files, we provide the capability to create and utilize personalized templates. These templates can be set as defaults or used selectively based on the user's preference.
+Save reusable templates for pages, layouts, components, composables and Nitro APIs in your project's `.vscode` directory. Create page and layout templates from existing files through the Explorer context menu, or manage templates in the sidebar.
 
-We currently support two types of templates to ensure a consistent user experience: `.page-template` and `.layout-template`. When Nuxt is loaded, these files are treated as regular Vue files, simplifying the editing process. Templates can be created from existing respective files via the context menu or from empty templates accessed in the sidebar.
+| File type | Template extension | Default template setting |
+|---|---|---|
+| Page | `.page-template` | `nuxtr.vueFiles.pages.defaultTemplate` |
+| Layout | `.layout-template` | `nuxtr.vueFiles.layouts.defaultTemplate` |
+| Component | `.component-template` | `nuxtr.fileTemplates.components.defaultTemplate` |
+| Composable | `.composable-template` | `nuxtr.fileTemplates.composables.defaultTemplate` |
+| Nitro API | `.api-template` | `nuxtr.fileTemplates.apis.defaultTemplate` |
 
-Set your default template with these settings:
+Choose defaults in `settings.json`, using the template's filename:
 
-```JSON
-"nuxtr.vueFiles.pages.defaultTemplate": "default.page-template",
-"nuxtr.vueFiles.layouts.defaultTemplate": "default.layout-template"
+```json
+{
+    "nuxtr.vueFiles.pages.defaultTemplate": "default.page-template",
+    "nuxtr.vueFiles.layouts.defaultTemplate": "default.layout-template",
+    "nuxtr.fileTemplates.components.defaultTemplate": "default.component-template",
+    "nuxtr.fileTemplates.composables.defaultTemplate": "default.composable-template",
+    "nuxtr.fileTemplates.apis.defaultTemplate": "default.api-template"
+}
 ```
+
+Component, composable and API defaults are optional; leave them empty to use the built-in scaffold.
 
 ![File Templates](https://raw.githubusercontent.com/nuxtrdev/nuxtr-vscode/main/.github/media/file_templates.gif)
 
@@ -198,40 +235,58 @@ Set your default template with these settings:
 
 ### Support for `srcDir`, `serverDir`, and Monorepo Projects
 
-> **Note:** Monorepo mode is under heavy development.
+Nuxtr discovers nested Nuxt applications and projects across multiple workspace folders. Run **Nuxtr: Select Nuxt Project** to select an application when needed. Explorer actions and completions use the project containing the selected file or folder.
 
-Nuxtr seamlessly integrates with projects using `srcDir` and `serverDir`, as well as monorepo setups. Set your `srcDir` or `serverDir` directly from your `nuxt.config.ts` file, and Nuxtr will detect and generate files/directories in the correct locations for you.
+Nuxt 3 and 4 layouts are supported, including Nuxt 3's compatibility setting, Nuxt 4's default `app/` layout and legacy layouts. Application files and root-level server, public and shared directories are resolved separately.
 
-Example:
+Set custom directories in `nuxt.config.ts`:
 
-```JSON
-  "srcDir": "src",
-  "serverDir": "server"
+```ts
+export default defineNuxtConfig({
+    srcDir: 'src',
+    serverDir: 'server'
+})
 ```
 
-For monorepo configurations, specify the directory name containing your Nuxt project in your `.vscode/settings.json`:
+For an explicit monorepo override, set the project's relative path in `.vscode/settings.json`:
 
-```JSON
-  "nuxtr.monorepoMode.DirectoryName": "directory-name"
+```json
+{
+    "nuxtr.monorepoMode.DirectoryName": "apps/web"
+}
 ```
+
+If computed or inherited configuration prevents safe directory resolution, Nuxtr shows guidance to use an explicit Explorer destination or make the directory settings explicit before creating files.
 
 <br>
 <br>
 
 ### Execute Scripts with Ease
 
-Access main scripts directly from the command palette for swift execution. Should you require a custom command, you can conveniently locate it in the sidebar. With the exception of nuxt dev, all other commands operate in the background, and you can monitor the output in the VSCode output channel.
+Run common Nuxt commands from the Command Palette, or select a script from `package.json` in the sidebar's Project view. Nuxtr uses the selected project's package manager and working directory. Terminal commands appear in the integrated terminal; background command output is available in the Nuxtr Output channel.
 
 ![Nuxt Scripts](https://raw.githubusercontent.com/nuxtrdev/nuxtr-vscode/main/.github/media/scripts.png)
+
+<br>
+
+### Optional Terminal Reuse
+
+Prefer fewer terminals? Enable reuse in `settings.json`:
+
+```json
+{
+    "nuxtr.terminal.reuse": true
+}
+```
+
+Reuse is off by default. With [VS Code shell integration](https://code.visualstudio.com/docs/terminal/shell-integration), Nuxtr can reuse its own terminal after a command finishes, provided it belongs to the same project and working directory. Busy dev servers, unrelated terminals and shells without reliable integration get a new terminal.
 
 <br>
 <br>
 
 ### Toggle Nuxt Devtools from your status bar
 
-[Nuxt Devtools](https://devtools.nuxtjs.org/) empowers you to make informed decisions about your project. Provides invaluable insights and transparency for your Nuxt application. Uncover performance gaps and effortlessly fine-tune your app configurations and more!
-
- Nuxtr offers a toggle directly in your VSCode statusbar. Manual toggling from nuxt.config.ts is also detected and state is synced.
+Toggle [Nuxt DevTools](https://devtools.nuxtjs.org/) directly from the VS Code status bar. Changes made in `nuxt.config.ts` are detected and the toggle stays in sync.
 
 ![Nuxt Devtools](https://raw.githubusercontent.com/nuxtrdev/nuxtr-vscode/main/.github/media/devtools.gif)
 
@@ -240,12 +295,11 @@ Access main scripts directly from the command palette for swift execution. Shoul
 
 ### Search and install Nuxt integrations
 
-Effortlessly search for and install Nuxt modules, mirroring the familiar experience of the [Nuxt Modules](https://nuxt.com/modules) directory. Once you've located your desired module and your package manager is detected, it will be seamlessly integrated into your nuxt.config file. A success message will confirm the installation, along with a quick link to access the module documentation.
+Browse modules and layers from the Nuxtr sidebar, with search and labeled filters for integration type, Nuxt version, module source and category.
 
+Select **Install** to add a module with your project's package manager and update `nuxt.config`. Modules use development dependencies by default unless their metadata requires runtime installation. Open the module's documentation with **Docs**. Installation and configuration failures are reported separately, so you can see which step needs attention.
 
-Search and Install Nuxt modules with a typical searching/filters experience as [Nuxt Modules](https://nuxt.com/modules) directory. Once you have found your desired module and your package manager is detected, it will be installed and added to the nuxt.config file. A success message will be displayed, along with a button to access the module documentation.
-
-Starting from v0.1.0, you can filter integration types (modules/layers) from the sidebar.
+The catalogue uses the [official Nuxt modules feed](https://cdn.jsdelivr.net/npm/@nuxt/modules@latest/modules.json). Select **Refresh catalogue** to fetch the latest list. Cached results and a bundled snapshot keep browsing available offline; installing packages still requires access to your package registry.
 
 ![Nuxt Modules](https://raw.githubusercontent.com/nuxtrdev/nuxtr-vscode/main/.github/media/modules.gif)
 
@@ -254,24 +308,61 @@ Starting from v0.1.0, you can filter integration types (modules/layers) from the
 
 ### Install & Configure UI Libraries, CSS frameworks, and Linters
 
-- UI Frameworks: [Vuetify](https://nuxt.com/modules/vuetify-nuxt-module).
-- CSS Frameworks: [Tailwind CSS](https://tailwindcss.nuxtjs.org) and [UnoCSS](https://unocss.dev/integrations/nuxt).
-- Linters: [`Eslint`](https://eslint.nuxt.com) and [`stylelint`](https://nuxt.com/modules/stylelint).
+- UI Libraries: [Vuetify](https://nuxt.com/modules/vuetify-nuxt-module).
+- CSS Frameworks: Tailwind CSS with a choice of Tailwind 4/Vite or the legacy Tailwind 3/Nuxt module recipe, and [UnoCSS](https://unocss.dev/integrations/nuxt).
+- Linters: the official [Nuxt ESLint module](https://eslint.nuxt.com) and [Stylelint](https://nuxt.com/modules/stylelint).
 
-And more coming soon.
+Use **Nuxtr: Configure CSS Frameworks** or **Nuxtr: Configure Linters** from the Command Palette. The Tailwind recipes install matching packages and generate the CSS and configuration for the selected version.
 
 <br>
 
 ![Nuxt Modules](https://raw.githubusercontent.com/nuxtrdev/nuxtr-vscode/main/.github/media/css_frameworks.gif)
 
 <br>
+<br>
+
+### Project Health and Diagnostics
+
+Run **Nuxtr: Project Health Check and Diagnostics** to check the installed Nuxt version, generated types, package-manager availability, catalog references and directory resolution. Findings include suggested next steps without changing your project.
+
+The report opens in the editor for review. Select **Copy diagnostics** in the notification when you want to share it in an issue. Nothing is sent automatically; the report omits source files, environment values and absolute paths.
+
+<br>
+<br>
+
+### Wrap Selections in Nuxt Components
+
+Select content in a Vue template and run **Nuxtr: Wrap Selection in Nuxt Component**, or use the editor context menu. Choose `ClientOnly`, `NuxtLink`, `DevOnly`, `NuxtLayout` or `NuxtErrorBoundary`.
+
+Multiple selections are supported and undo together. Wrapping respects your editor's indentation and line endings. `NuxtLink` starts with `to="/"`, ready for you to edit. This action supports inline HTML templates; script, style, external-template and Pug blocks are excluded.
+
+<br>
+<br>
 
 ### Contributing
 
 We always welcome new ideas! 💚 <br>
-If you have any idea, feel free to [open a discussion](https://github.com/nuxtrdev/nuxtr-vscode/discussions/new/choose) first and let's talk about it!
+If you have an idea, [open a discussion](https://github.com/nuxtrdev/nuxtr-vscode/discussions/new/choose) first and let's talk about it!
 
-For local installed-VSIX testing, use the [release validation checklist](./docs/RELEASE_VALIDATION.md). It includes disposable Nuxt project flows, retained automated evidence, the six-platform/editor CI matrix and mandatory WSL checks. See the [contributor guide](./CONTRIBUTING.md) for build and test commands.
+To work on the extension, use **Node 24.20.0** and **pnpm 12.10.1**:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm build
+```
+
+Open the repository in VS Code and press **F5** with the **Run Extension** launch configuration. In the Extension Development Host, open a disposable Nuxt app and try the commands and sidebar. The launch task watches both the extension and Vue sidebar; reload the host after extension code changes.
+
+To test an installed build:
+
+```sh
+pnpm package --out nuxtr-local.vsix
+code --install-extension nuxtr-local.vsix --force
+```
+
+Reload VS Code, open your Nuxt app, and follow the [manual release checklist](./docs/RELEASE_VALIDATION.md). Run `pnpm validate` for the shared automated checks and `pnpm test:fixtures` for generated-file checks in Nuxt 3 and 4 projects.
+
+See the [contributor guide](./CONTRIBUTING.md) for the repository layout, development workflow, test requirements and code documentation conventions.
 
 <br>
 
@@ -288,19 +379,3 @@ Nuxtr relies on the following projects/repositories:
 ### License
 
 [MIT](https://raw.githubusercontent.com/nuxtrdev/nuxtr-vscode/main/LICENSE) License © 2023 with 💚
-
-### Project health and diagnostics
-
-Run **Nuxtr: Project Health Check and Diagnostics** in a Nuxt project to check installed Nuxt, generated types, package-manager availability, catalog references and directory resolution. The command opens a read-only inspection report in the editor. Review it, then use **Copy diagnostics** in the notification to copy it. Nothing is sent automatically; source files, environment values and absolute paths are omitted. Warnings include suggested next steps and never modify your project.
-
-### Wrap selections in Nuxt components
-
-Select content in an HTML Vue template and run **Nuxtr: Wrap Selection in Nuxt Component**, or use the editor context menu. Choose `ClientOnly`, `NuxtLink`, `DevOnly`, `NuxtLayout` or `NuxtErrorBoundary`. Multiple selections are supported and undo together. Multiline content uses the editor indentation and line endings; `NuxtLink` starts with `to="/"`, which you can edit afterward. Script, style, external-template and Pug blocks are excluded.
-
-### Optional terminal reuse
-
-Enable `nuxtr.terminal.reuse` to reuse idle terminals created by Nuxtr for the same project and working directory. The default is `false`. Reuse requires [VS Code shell integration](https://code.visualstudio.com/docs/terminal/shell-integration), an observed finished command and a matching reported directory. Busy dev servers, unrelated terminals, terminals whose directory changed, and shells without reliable integration always get a new terminal. Nuxtr never stops a running task to reuse its terminal.
-
-### Module-name completion
-
-Type a package name inside the `modules` array of `nuxt.config.ts`/`.js`/`.mjs`/`.cjs` or `.config/nuxt.ts`, then use completion (Ctrl+Space). Nuxtr suggests canonical names from the sidebar cache or bundled offline catalogue, including tuple-style module entries. Already configured modules, layers and known incompatible Nuxt ranges are excluded. Completion never fetches from the network; **Refresh Modules** updates the shared cache. Disable it with `nuxtr.intellisense.nuxtModules`.
