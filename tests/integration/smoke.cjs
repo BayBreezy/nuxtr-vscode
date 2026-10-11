@@ -9,6 +9,7 @@ exports.run = async function run () {
     const extension = vscode.extensions.all.find(e => e.packageJSON.name === 'nuxtr-vscode');
     assert(extension, 'Development extension must be installed');
     await extension.activate();
+    console.log('NUXTR_SMOKE_ENV: ' + JSON.stringify({ scenario: process.env.NUXTR_SCENARIO, vscode: vscode.version, platform: process.platform, arch: process.arch, extension: extension.id, version: extension.packageJSON.version }));
     const commands = await vscode.commands.getCommands();
     assert(commands.includes('nuxtr.createProject'), 'Project creation must be available');
     if (!['empty', 'non-nuxt'].includes(process.env.NUXTR_SCENARIO)) {
