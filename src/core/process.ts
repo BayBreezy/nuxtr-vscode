@@ -8,13 +8,15 @@ export function executeCommand (command: ProcessCommand, signal?: AbortSignal): 
     return new Promise((resolve, reject) => {
         let executable = command.executable;
         let args = command.args;
-        if (process.platform === 'win32' && ['npm', 'pnpm', 'yarn'].includes(executable)) {
+        const windowsManagerShim = process.platform === 'win32' && ['npm', 'pnpm', 'yarn'].includes(executable);
+        if (windowsManagerShim) {
             if (args.some(arg => /["%!\r\n&|<>]/.test(arg))) { reject(new Error('Unsupported Windows command argument. Use the terminal to run this specification.')); return; }
             args = ['/d', '/s', '/c', [executable, ...args.map(arg => `"${arg}"`)].join(' ')];
             executable = 'cmd.exe';
         }
         if (signal?.aborted) { resolve({ stdout: '', stderr: '', exitCode: null, signal: null, failure: 'cancelled', success: false }); return; }
-        const child = spawn(executable, args, { cwd: command.cwd, windowsHide: true, detached: process.platform !== 'win32', stdio: ['ignore', 'pipe', 'pipe'] });
+        // CMD consumes the quoting above; Node escaping it again gives managers literal quote characters.
+        const child = spawn(executable, args, { cwd: command.cwd, windowsHide: true, windowsVerbatimArguments: windowsManagerShim, detached: process.platform !== 'win32', stdio: ['ignore', 'pipe', 'pipe'] });
         const result: ProcessResult = { stdout: '', stderr: '', exitCode: null, signal: null, success: false };
         let killTimer: ReturnType<typeof setTimeout> | undefined;
         /** Stop the child and its Windows process tree, escalating if it ignores termination. */

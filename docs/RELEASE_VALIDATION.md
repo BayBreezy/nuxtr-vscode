@@ -22,7 +22,7 @@ The CI workflow supports push/PR validation and [manual dispatch](https://docs.g
 | GitHub Windows | Pending hosted execution | Pending hosted execution |
 | GitHub macOS | Pending hosted execution | Pending hosted execution |
 
-Local macOS validation currently passes 93 unit tests, ten development-host scenarios, four extracted-VSIX host scenarios and production-sidebar browser checks. Host tests use disposable offline projects and a minimal Vue language fixture; they do not replace a hands-on installed-extension walkthrough with Vue - Official. Local candidate identity, checksum and subsequent platform/tester results belong in ignored `PROGRESS.md` and `.artifacts/release-confidence/candidate.json`; this guide deliberately contains no self-referencing commit hash.
+Local macOS validation currently passes 96 unit tests, ten development-host scenarios, four extracted-VSIX host scenarios and production-sidebar browser checks. Host tests use disposable offline projects and a minimal Vue language fixture; they do not replace a hands-on installed-extension walkthrough with Vue - Official. Local candidate identity, checksum and subsequent platform/tester results belong in ignored `PROGRESS.md` and `.artifacts/release-confidence/candidate.json`; this guide deliberately contains no self-referencing commit hash.
 
 ## Installed VSIX checklist on macOS
 
