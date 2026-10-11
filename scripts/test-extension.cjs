@@ -63,6 +63,15 @@ async function main () {
             chmodSync(executable, 0o755);
             writeFileSync(executable + '.cmd', '@node "%~dp0pm.cjs" %*\r\n');
         }
+        // Keep first-run welcome/chat editors from taking focus during editor-command assertions.
+        const profile = join(temporary, scenario + '-profile');
+        mkdirSync(join(profile, 'User'), { recursive: true });
+        writeFileSync(join(profile, 'User/settings.json'), JSON.stringify({
+            'workbench.startupEditor': 'none',
+            'chat.disableAIFeatures': true,
+            'window.restoreWindows': 'none',
+            'workbench.editor.enablePreview': false,
+        }));
         await runTests({
             extensionDevelopmentPath: [process.env.NUXTR_EXTENSION_PATH || root, vueLanguage],
             extensionTestsPath: join(root, 'tests/integration/smoke.cjs'),
@@ -71,7 +80,7 @@ async function main () {
             extensionTestsEnv: { NUXTR_SCENARIO: scenario, PATH: binaries + require('node:path').delimiter + process.env.PATH },
             launchArgs: [
                 ...(scenario === 'empty' ? [] : [folder]),
-                '--user-data-dir=' + join(temporary, scenario + '-profile'),
+                '--user-data-dir=' + profile,
                 '--extensions-dir=' + join(temporary, scenario + '-extensions'),
                 '--disable-extensions', '--disable-workspace-trust', '--skip-welcome', '--skip-release-notes'
             ]

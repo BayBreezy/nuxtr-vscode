@@ -1,8 +1,26 @@
 /** Smoke-test the bundled extension and sidebar in a real VS Code extension host. */
 const assert = require('node:assert/strict');
+const { execFileSync } = require('node:child_process');
 const { existsSync, readFileSync } = require('node:fs');
 const { join } = require('node:path');
 const vscode = require('vscode');
+
+/** Activate the isolated native test window and wait for its focus event before routing editor commands. */
+async function focusTestWindow () {
+    // Sequential Electron instances share a macOS bundle ID; activate this host's parent process explicitly.
+    if (process.platform === 'darwin') {
+        execFileSync('/usr/bin/osascript', ['-l', 'JavaScript', '-e',
+            `ObjC.import('AppKit'); $.NSRunningApplication.runningApplicationWithProcessIdentifier(${process.ppid}).activateWithOptions(2);`], { timeout: 5000 });
+    }
+    await vscode.commands.executeCommand('workbench.action.switchToMainWindow');
+    if (vscode.window.state.focused) { return; }
+    await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => { listener.dispose(); reject(new Error('The native test window did not gain focus.')); }, 5000);
+        const listener = vscode.window.onDidChangeWindowState(state => {
+            if (state.focused) { clearTimeout(timer); listener.dispose(); resolve(); }
+        });
+    });
+}
 
 /** Wait for the document mirror to receive an editor operation after its command promise settles. */
 function documentText (document, expected) {
@@ -64,9 +82,10 @@ exports.run = async function run () {
         assert.equal(await vscode.commands.executeCommand('nuxtr.wrapWithNuxtComponent', 'ClientOnly'), true);
         assert(wrappedDocument.getText().includes('<ClientOnly><span>first</span></ClientOnly>'));
         assert(wrappedDocument.getText().includes('<ClientOnly><span>second</span></ClientOnly>'));
-        await vscode.commands.executeCommand('workbench.action.focusActiveEditorGroup');
-        // The command promise precedes native/renderer focus events. Give those events a frame to settle.
+        // Let sidebar activation settle before claiming native and editor focus immediately before Undo.
         await new Promise(resolve => setTimeout(resolve, 150));
+        await focusTestWindow();
+        await vscode.window.showTextDocument(wrappedDocument, { preview: false, preserveFocus: false });
         // Undo routing requires editor focus; wait for the resulting document event before asserting.
         await vscode.commands.executeCommand('default:undo');
         await documentText(wrappedDocument, wrappingOriginal);

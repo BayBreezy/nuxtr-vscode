@@ -63,6 +63,8 @@ const extension = unjs({
 // sidebar formatting while applying Vue error-prevention and TypeScript semantic rules.
 const sidebarFiles = ['src/sideBar/**/*.vue'];
 export default [
+    // Editor downloads and extracted VSIX evidence contain third-party/generated code.
+    { ignores: ['.vscode-test/**', '.artifacts/**'] },
     { languageOptions: { parserOptions: { tsconfigRootDir: import.meta.dirname } } },
     ...extension.map(config => config.files || config.ignores || config.plugins?.markdown ? config : {
         ...config, files: ['**/*.{js,ts,tsx,mjs,cjs,mts,cts}']
