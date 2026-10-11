@@ -40,6 +40,10 @@ exports.run = async function run () {
             await assert.rejects(vscode.commands.executeCommand('nuxtr.selectProject', vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, 'unrelated')), /outside/);
             await vscode.commands.executeCommand('nuxtr.selectProject', root);
         }
+        const health = await vscode.commands.executeCommand('nuxtr.projectHealthCheck', root);
+        assert(health.includes('Generated types'));
+        assert(!health.includes(root.fsPath), 'Shareable diagnostics must omit absolute paths');
+        assert(health.includes('Nuxt is not installed'), 'Declared Nuxt must not masquerade as installed');
         const config = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(root, 'nuxt.config.ts'));
         const lenses = await vscode.commands.executeCommand('vscode.executeCodeLensProvider', config.uri);
         assert(lenses.some(lens => lens.command?.command === 'nuxtr.createModuleAction'), 'Nuxt config module actions must be available');

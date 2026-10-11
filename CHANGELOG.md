@@ -1,5 +1,7 @@
 ## Unreleased — modernization
 
+- Add read-only project health checks with a diagnostics preview and explicit clipboard copy.
+
 - Complete Pinia and other successful command configuration while documentation notifications remain open; keep delayed documentation actions functional and separate browser errors from installation results.
 - Open module/layer sidebar tabs on the first CodeLens click, including cold views and stale filters. Show one Nitro task palette entry and handle missing Explorer resources without `undefined.fsPath` errors.
 - Execute offline package-manager launchers in paths containing spaces, including real Windows command shims in CI; cover cancellation, timeouts, failed installs and preserved configuration.

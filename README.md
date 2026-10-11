@@ -288,3 +288,7 @@ Nuxtr relies on the following projects/repositories:
 ### License
 
 [MIT](https://raw.githubusercontent.com/nuxtrdev/nuxtr-vscode/main/LICENSE) License © 2023 with 💚
+
+### Project health and diagnostics
+
+Run **Nuxtr: Project Health Check and Diagnostics** in a Nuxt project to check installed Nuxt, generated types, package-manager availability, catalog references and directory resolution. The command opens a read-only inspection report in the editor. Review it, then use **Copy diagnostics** in the notification to copy it. Nothing is sent automatically; source files, environment values and absolute paths are omitted. Warnings include suggested next steps and never modify your project.

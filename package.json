@@ -337,6 +337,10 @@
         {
           "command": "nuxtr.globalState",
           "when": "false"
+        },
+        {
+          "command": "nuxtr.projectHealthCheck",
+          "when": "nuxtr.isNuxtProject"
         }
       ],
       "view/title": [
@@ -1022,6 +1026,11 @@
       {
         "command": "nuxtr.enableNitroTasks",
         "title": "Enable Experimental Nitro Tasks",
+        "category": "Nuxtr"
+      },
+      {
+        "command": "nuxtr.projectHealthCheck",
+        "title": "Project Health Check and Diagnostics",
         "category": "Nuxtr"
       }
     ],
