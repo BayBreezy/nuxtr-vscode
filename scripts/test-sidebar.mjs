@@ -14,10 +14,15 @@ const { parseSidebarRequest } = await jiti.import('../src/core/messages.ts');
 const modules = normalizeCatalogue(JSON.parse(await readFile(new URL('../src/content/modules.json', import.meta.url), 'utf8')));
 const nonce = 'fixtureSidebarNonce';
 const bridge = `window.fixtureHost = {
- installResult: undefined, transportError: false,
+ installResult: undefined, transportError: false, route: 'modules', action: window.fixtureInitialAction,
  requests: [], emit(message) { window.dispatchEvent(new MessageEvent('message', { data: message })); },
- navigate(command) { this.emit({ command }); },
+ navigate(command) {
+ if (command === 'addModule' || command === 'addLayer') { this.route = 'modules'; this.action = command; }
+ else { this.route = command; this.action = undefined; }
+ this.emit({ command: this.route }); if (this.action) this.emit({ command: this.action });
+ },
  ready() {
+ this.emit({ command: this.route }); if (this.action) this.emit({ command: this.action });
  this.emit({ command: 'moduleCatalogue', data: { modules: ${JSON.stringify(modules)}, source: 'snapshot', updatedAt: 1791590400000, stale: true, projectVersion: '4.6.1' } });
  this.emit({ command: 'installedModules', data: [{ name: 'nuxt', version: '4.6.1' }] });
  this.emit({ command: 'projectViewData', data: { scripts: { build: 'nuxt build' }, dependencies: [{ name: 'nuxt', version: '4.6.1' }], snippets: ['example.code-snippets'], fileTemplates: ['custom.component-template'] } });
@@ -52,8 +57,23 @@ try {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.route('**/*', route => route.request().url().startsWith('http://127.0.0.1:') ? route.continue() : route.abort());
+    // Simulate the CodeLens intent queued before a cold sidebar's Vue application exists.
+    await page.addInitScript(() => { globalThis.fixtureInitialAction = 'addModule'; });
     await page.goto('http://127.0.0.1:' + address.port);
     const search = page.getByPlaceholder('Search Integrations...');
+    await search.waitFor();
+    await page.getByRole('button', { name: /Filters/ }).click();
+    await page.getByRole('button', { name: 'Modules', exact: true }).waitFor();
+    await page.getByRole('button', { name: /Filters/ }).click();
+    for (const action of ['addLayer', 'addModule']) {
+        await page.evaluate(() => globalThis.fixtureHost.navigate('projectView'));
+        await page.getByRole('button', { name: 'Dependencies', exact: true }).waitFor();
+        await page.evaluate(command => globalThis.fixtureHost.navigate(command), action);
+        await search.waitFor();
+        await page.getByRole('button', { name: /Filters/ }).click();
+        await page.getByRole('button', { name: action === 'addLayer' ? 'Layers' : 'Modules', exact: true }).waitFor();
+        await page.getByRole('button', { name: /Filters/ }).click();
+    }
     await search.fill('eslint');
     const eslint = page.getByRole('article', { name: 'Module @nuxt/eslint', exact: true });
     await eslint.waitFor();
@@ -111,5 +131,5 @@ try {
     assert.ok(requests.some(message => message.command === 'openExternal' && message.url === 'https://github.com/egidiusmengelberg/nuxt-aos'));
     assert.ok(requests.some(message => message.command === 'openPackageReleaseNotes' && message.name === 'nuxt'));
     assert.deepEqual(errors, [], 'Production sidebar must render without browser errors');
-    console.log('PASS: production CSP, cloneable module requests, nuxt-aos install/retry/results/docs, offline catalogue, navigation, keyboard menus, themes and release-note action');
+    console.log('PASS: cold-sidebar and Project-to-module/layer first-click navigation, production CSP, cloneable module requests, nuxt-aos install/retry/results/docs, offline catalogue, keyboard menus, themes and release-note action');
 } finally { await browser.close(); await new Promise(done => server.close(done)); }
