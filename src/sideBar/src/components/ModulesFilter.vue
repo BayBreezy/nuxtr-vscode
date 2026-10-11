@@ -30,24 +30,28 @@
     <Transition name="slide-fade">
       <div v-show="listOpen" class="mt-3 flex flex-col gap-3">
         <DropdownItem
+          heading="Integration type"
           :label="integrationType"
           :items="integrationTypes"
           :selecteditemValue="integrationType"
           @selectedItem="selectIntegrationType($event)"
         />
         <DropdownItem
+          heading="Nuxt version"
           :label="selectedVersion"
           :items="nuxtVersions"
           :selecteditemValue="selectedVersion"
           @selectedItem="selectVersion($event)"
         />
         <DropdownItem
+          heading="Module source"
           :label="selectedType"
           :items="types"
           :selecteditemValue="selectedType"
           @selectedItem="selectType($event)"
         />
         <DropdownItem
+          heading="Category"
           :label="selectedCategory"
           :items="categories"
           :selecteditemValue="selectedCategory"

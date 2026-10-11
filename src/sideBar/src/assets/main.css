@@ -8,6 +8,18 @@ body {
   padding: 0;
 }
 
+/* Give enabled actions a pointer while keeping unavailable actions visibly disabled. */
+button:enabled:not([aria-disabled="true"]),
+a[href]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+button:disabled,
+button[aria-disabled="true"],
+a[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 /* @layer base {
   @font-face {
     font-family: Inter;

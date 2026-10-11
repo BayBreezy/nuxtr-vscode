@@ -1,11 +1,15 @@
-<!-- Select a filter value with an accessible menu and owned document listeners. -->
+<!-- Label each filter and select its value with an accessible menu and owned document listeners. -->
 <template>
   <div class="relative" ref="root">
+    <label :id="headingId" :for="buttonId" class="mb-1.5 block cursor-pointer text-xs font-medium text-[var(--vscode-descriptionForeground)]">
+      {{ heading }}
+    </label>
     <button
+      :id="buttonId" :aria-labelledby="`${headingId} ${valueId}`"
       class="relative block w-full rounded-md border border-[var(--vscode-dropdown-border)] bg-[var(--vscode-dropdown-background)] px-3 py-2 pr-10 text-[var(--vscode-foreground)]"
       :aria-expanded="dropdownOpen" @click.prevent="toggleMenu()"
     >
-      <span class="flex text-left">{{ label }}</span>
+      <span :id="valueId" class="flex text-left">{{ label }}</span>
       <span
         class="pointer-events-none absolute bottom-0 right-0 top-0 flex items-center"
       >
@@ -68,10 +72,19 @@
 
 <script setup lang="ts">
 import { useDocumentEvent } from "../composables/events";
-import { ref, watch } from "vue";
+import { ref, useId, watch } from "vue";
+
+// Keep label associations unique when several dropdowns share the same selected value.
+const buttonId = useId();
+const headingId = `${buttonId}-heading`;
+const valueId = `${buttonId}-value`;
 
 // define props
 const props = defineProps({
+  heading: {
+    type: String,
+    required: true,
+  },
   label: {
     type: String,
     default: "Version",
