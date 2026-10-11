@@ -1,6 +1,6 @@
 /** Exercise the production sidebar in an isolated browser with a fixture host, restrictive CSP and no live services. */
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
@@ -13,6 +13,8 @@ const { normalizeCatalogue } = await jiti.import('../src/core/catalogue.ts');
 const { parseSidebarRequest } = await jiti.import('../src/core/messages.ts');
 const modules = normalizeCatalogue(JSON.parse(await readFile(new URL('../src/content/modules.json', import.meta.url), 'utf8')));
 const nonce = 'fixtureSidebarNonce';
+const evidenceDirectory = process.env.NUXTR_ARTIFACT_DIR || tmpdir();
+mkdirSync(evidenceDirectory, { recursive: true });
 const bridge = `window.fixtureHost = {
  installResult: undefined, transportError: false, route: 'modules', action: window.fixtureInitialAction,
  requests: [], emit(message) { window.dispatchEvent(new MessageEvent('message', { data: message })); },
@@ -114,7 +116,7 @@ try {
     assert.equal(await page.getByRole('button', { name: '4.x', exact: true }).isVisible(), false);
     await page.getByRole('button', { name: /Filters/ }).click();
     await page.getByRole('button', { name: 'Project', exact: true }).waitFor({ state: 'hidden' });
-    await page.screenshot({ path: join(tmpdir(), 'nuxtr-sidebar-dark.png'), animations: 'disabled' });
+    await page.screenshot({ path: join(evidenceDirectory, 'nuxtr-sidebar-dark.png'), animations: 'disabled' });
     await page.evaluate(() => { document.body.className = 'vscode-light'; globalThis.fixtureHost.navigate('projectView'); });
     const dependencies = page.getByRole('button', { name: 'Dependencies', exact: true });
     await dependencies.focus();
@@ -123,7 +125,7 @@ try {
     await release.waitFor();
     await release.click();
     await page.getByRole('button', { name: 'Share an idea' }).waitFor();
-    await page.screenshot({ path: join(tmpdir(), 'nuxtr-sidebar-light.png'), animations: 'disabled' });
+    await page.screenshot({ path: join(evidenceDirectory, 'nuxtr-sidebar-light.png'), animations: 'disabled' });
     const requests = await page.evaluate(() => globalThis.fixtureHost.requests);
     assert.ok(requests.every(message => parseSidebarRequest(message)), 'Rendered sidebar requests must pass the actual extension-host validator');
     assert.ok(requests.some(message => message.command === 'installModule' && message.module.npm === '@nuxt/eslint'));
