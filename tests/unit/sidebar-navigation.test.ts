@@ -26,6 +26,7 @@ vi.mock('../../src/services/project', () => ({ currentProject: () => ({ root: '/
 vi.mock('../../src/utils/nuxt', () => ({ getNuxtVersion: () => '4.6.1' }));
 vi.mock('../../src/utils/dependency', () => ({ choosePackageManager: vi.fn() }));
 vi.mock('../../src/utils', () => ({ getNonce: () => 'testNonce', getUri: () => '/assets/test', logger: { log: vi.fn() }, updateDependencies: vi.fn() }));
+vi.mock('../../src/services/terminals', () => ({ activateTerminals: vi.fn() }));
 vi.mock('../../src/commands/wrapComponent', () => ({ wrapWithNuxtComponent: vi.fn() }));
 vi.mock('../../src/commands/projectHealth', () => ({ projectHealthCheck: vi.fn() }));
 vi.mock('../../src/commands', () => ({ default: {} }));

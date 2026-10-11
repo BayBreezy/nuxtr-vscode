@@ -1,5 +1,6 @@
 /** Register Nuxt project commands, sidebar, status indicators and owned project watchers. */
 import { ExtensionContext, Uri, commands, window } from 'vscode';
+import { activateTerminals } from './services/terminals';
 import { activateSnippets } from './snippets';
 import { wrapWithNuxtComponent } from './commands/wrapComponent';
 import { projectHealthCheck } from './commands/projectHealth';
@@ -83,6 +84,7 @@ export async function activateExtension (context: ExtensionContext) {
     context.subscriptions.push(logger);
     logger.log('Nuxtr is active')
     await activateSnippets(context);
+    activateTerminals(context);
 
     // global state command
     context.subscriptions.push(commands.registerCommand('nuxtr.globalState', ({ update, name, value }) => {

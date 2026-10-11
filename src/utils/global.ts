@@ -2,7 +2,7 @@
 import { randomBytes } from 'node:crypto';
 import { safeExternalUrl } from '../core/messages';
 import type { WorkspaceConfiguration } from 'vscode';
-import { ProgressLocation, ThemeIcon, Uri, Webview, env, window, workspace } from 'vscode';
+import { ProgressLocation, Uri, Webview, env, window, workspace } from 'vscode';
 import type { NuxtrConfiguration } from '../types';
 import { currentProject, projectSettingsResource } from '../services/project';
 import { projectDirectory } from './nuxt';
@@ -46,13 +46,8 @@ export const vscodeConfiguration = (): WorkspaceConfiguration => {
     return workspace.getConfiguration();
 }
 
-/** Create a project terminal for each action so a busy or differently scoped terminal never receives another command. */
-export const newTerminal = (terminalName: string, command: string, cwd?: string) => {
-    const terminal = window.createTerminal({ name: terminalName, cwd: cwd || projectRootDirectory(), ...(process.platform === 'win32' ? { shellPath: 'powershell.exe' } : {}), iconPath: new ThemeIcon('nuxt-logo') });
-    terminal.sendText(command);
-    terminal.show();
-    return terminal;
-};
+/** Run an action in a new or safely reusable Nuxtr-owned project terminal. */
+export { newProjectTerminal as newTerminal } from '../services/terminals';
 
 /** Execute a project command with complete results, cancellation and success/failure notifications. */
 export { runProjectCommand as runCommand } from '../services/process';

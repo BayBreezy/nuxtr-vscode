@@ -538,6 +538,12 @@
             "type": "boolean",
             "default": false,
             "description": "Prefix generated composable filenames with use (for example useCounter.ts)."
+          },
+          "nuxtr.terminal.reuse": {
+            "type": "boolean",
+            "default": false,
+            "description": "Reuse idle Nuxtr-owned terminals for the same Nuxt project and working directory. Requires shell integration; busy or unobserved terminals always get a new terminal.",
+            "scope": "resource"
           }
         }
       },
