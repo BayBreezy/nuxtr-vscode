@@ -28,3 +28,9 @@ test('script and non-Vue selections are rejected before opening a picker', async
     await expect(wrapWithNuxtComponent()).rejects.toThrow('Vue');
     expect(host.pick).not.toHaveBeenCalled();
 });
+test('an editor context-menu resource opens the picker instead of becoming a component name', async () => {
+    host.pick.mockResolvedValue({ label: 'ClientOnly' });
+    await expect(wrapWithNuxtComponent({ fsPath: '/project/component.vue' } as any)).resolves.toBe(true);
+    expect(host.pick).toHaveBeenCalledOnce();
+    expect(host.editor.edit).toHaveBeenCalledOnce();
+});
