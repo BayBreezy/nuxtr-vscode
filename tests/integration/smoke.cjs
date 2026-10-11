@@ -65,6 +65,8 @@ exports.run = async function run () {
         assert(wrappedDocument.getText().includes('<ClientOnly><span>first</span></ClientOnly>'));
         assert(wrappedDocument.getText().includes('<ClientOnly><span>second</span></ClientOnly>'));
         await vscode.commands.executeCommand('workbench.action.focusActiveEditorGroup');
+        // The command promise precedes native/renderer focus events. Give those events a frame to settle.
+        await new Promise(resolve => setTimeout(resolve, 150));
         // Undo routing requires editor focus; wait for the resulting document event before asserting.
         await vscode.commands.executeCommand('default:undo');
         await documentText(wrappedDocument, wrappingOriginal);
