@@ -271,6 +271,8 @@ And more coming soon.
 We always welcome new ideas! 💚 <br>
 If you have any idea, feel free to [open a discussion](https://github.com/nuxtrdev/nuxtr-vscode/discussions/new/choose) first and let's talk about it!
 
+For local installed-VSIX testing, use the [release validation checklist](./docs/RELEASE_VALIDATION.md). It includes disposable Nuxt project flows, retained automated evidence, the six-platform/editor CI matrix and mandatory WSL checks. See the [contributor guide](./CONTRIBUTING.md) for build and test commands.
+
 <br>
 
 ### Acknowledgements

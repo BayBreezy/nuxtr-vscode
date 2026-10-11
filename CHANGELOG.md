@@ -1,5 +1,10 @@
 ## Unreleased — modernization
 
+- Complete Pinia and other successful command configuration while documentation notifications remain open; keep delayed documentation actions functional and separate browser errors from installation results.
+- Open module/layer sidebar tabs on the first CodeLens click, including cold views and stale filters. Show one Nitro task palette entry and handle missing Explorer resources without `undefined.fsPath` errors.
+- Execute offline package-manager launchers in paths containing spaces, including real Windows command shims in CI; cover cancellation, timeouts, failed installs and preserved configuration.
+- Add manual CI dispatch and retain complete gate logs, actual editor/runtime identity, sidebar screenshots and the tested VSIX/checksum. Document issue regressions, installed-extension checks and mandatory WSL release sign-off.
+
 - Fix sidebar Install clicks failing to send reactive module metadata; show recoverable installation errors and allow configuration to proceed without dismissing the success notification.
 
 - Cover all Nuxt 4 API components, composables and utilities, preserve existing prefixes, link official docs, correct invalid signatures and guard newer APIs by project version.
